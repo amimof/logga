@@ -4,7 +4,7 @@ import (
 	"io"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	//corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -13,17 +13,24 @@ import (
 	"log"
 	"time"
 	"bytes"
+	"github.com/gorilla/mux"
 )
 
 type API struct {
-
+	client *kubernetes.Clientset
 }
 
-func NewAPI() *API {
-	return &API{}
+func NewAPI() (*API, error) {
+	c, err := makeClient()
+	if err != nil {
+		return nil, err
+	}
+	return &API{
+		client: c,
+	}, nil
 }
 
-func (a *API) makeClient(ctx context.Context) (corev1.CoreV1Interface, error) {
+func makeClient() (*kubernetes.Clientset, error) {
 	c, err := clientcmd.BuildConfigFromFlags("", "/Users/amir/.kube/config")
 	if err != nil {
 		return nil, err
@@ -32,36 +39,156 @@ func (a *API) makeClient(ctx context.Context) (corev1.CoreV1Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cs.CoreV1(), nil
+	return cs, nil
 }
 
-func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// GetPods will return PodList in a namespace
+func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 	
-	log.Printf("Getting logs ...")
+	vars := mux.Vars(r)
+	statusCode := 200
 
-	ctx, cancel := context.WithCancel(r.Context())
-	client, err := a.makeClient(ctx)
+	res := a.client.
+		CoreV1().
+		RESTClient().
+		Get().
+		SetHeader("Accept", "application/json").
+		Namespace(vars["namespace"]).
+		Resource("pods").
+		Do().
+		StatusCode(&statusCode)
+	
+
+	if res.Error() != nil {
+		http.Error(w, res.Error().Error(), statusCode)
+	}
+
+	b, err := res.Raw()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		cancel()
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
+}
+
+// GetPods will return a Pod in a namespace
+func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
+	
+	vars := mux.Vars(r)
+	statusCode := 200
+
+	res := a.client.
+		CoreV1().
+		RESTClient().
+		Get().
+		SetHeader("Accept", "application/json").
+		Namespace(vars["namespace"]).
+		Resource("pods").
+		Name(vars["pod"]).
+		Do().
+		StatusCode(&statusCode)
+	
+
+	if res.Error() != nil {
+		http.Error(w, res.Error().Error(), statusCode)
+	}
+
+	b, err := res.Raw()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
+}
+
+
+// Namespaces returns NamespaceList in a cluster  
+func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
+
+	statusCode := 200
+
+	res := a.client.
+		CoreV1().
+		RESTClient().
+		Get().
+		Resource("namespaces").
+		Do().
+		StatusCode(&statusCode)
+
+	if res.Error() != nil {
+		http.Error(w, res.Error().Error(), statusCode)
+	}
+
+	b, err := res.Raw()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
+}
+
+// GetNamespace returns a Namespace in a cluster
+func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	statusCode := 200
+
+	res := a.client.
+		CoreV1().
+		RESTClient().
+		Get().
+		Resource("namespaces").
+		Name(vars["namespace"]).
+		Do().
+		StatusCode(&statusCode)
+
+	if res.Error() != nil {
+		http.Error(w, res.Error().Error(), statusCode)
+	}
+
+	b, err := res.Raw()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
+}
+
+func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
+	
+	vars := mux.Vars(r)
+	container := r.URL.Query().Get("container")
+	ctx, cancel := context.WithCancel(r.Context())
+
 	since := int64(time.Second * 60)
 	opts := &v1.PodLogOptions{
-		Container:    "busybox",
+		Container:    container,
 		Follow:       true,
 		SinceSeconds:	&since,
 	}	
 
-	req := client.
-		Pods("default").
-		GetLogs("busybox-57b4f54479-c5w74", opts).
+	req := a.client.
+		CoreV1().
+		Pods(vars["namespace"]).
+		GetLogs(vars["pod"], opts).
 		Context(ctx)
 
 	stream, err := req.Stream()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		cancel()
 		return
 	}
 
