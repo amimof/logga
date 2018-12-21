@@ -7,13 +7,14 @@ import (
 	//corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"net/http"
-	"context"
-	"log"
-	"time"
 	"bytes"
+	"context"
 	"github.com/gorilla/mux"
+	"k8s.io/client-go/tools/clientcmd"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 type API struct {
@@ -44,7 +45,7 @@ func makeClient() (*kubernetes.Clientset, error) {
 
 // GetPods will return PodList in a namespace
 func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
-	
+
 	vars := mux.Vars(r)
 	statusCode := 200
 
@@ -57,7 +58,6 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 		Resource("pods").
 		Do().
 		StatusCode(&statusCode)
-	
 
 	if res.Error() != nil {
 		http.Error(w, res.Error().Error(), statusCode)
@@ -76,7 +76,7 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 // GetPods will return a Pod in a namespace
 func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
-	
+
 	vars := mux.Vars(r)
 	statusCode := 200
 
@@ -90,7 +90,6 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 		Name(vars["pod"]).
 		Do().
 		StatusCode(&statusCode)
-	
 
 	if res.Error() != nil {
 		http.Error(w, res.Error().Error(), statusCode)
@@ -107,8 +106,7 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-// Namespaces returns NamespaceList in a cluster  
+// Namespaces returns NamespaceList in a cluster
 func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 
 	statusCode := 200
@@ -153,6 +151,7 @@ func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
 
 	if res.Error() != nil {
 		http.Error(w, res.Error().Error(), statusCode)
+		return
 	}
 
 	b, err := res.Raw()
@@ -166,18 +165,65 @@ func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func sinceSeconds(s string) int64 {
+	since := int64(time.Second * 60)
+	if s == "" {
+		return since
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return since
+	}
+	return int64(time.Second * time.Duration(i))
+}
+
+// GetPodLog returns container log of a container in a pod
+func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	container := r.URL.Query().Get("container")
+	statusCode := 200
+	since := sinceSeconds(r.URL.Query().Get("sinceSeconds"))
+
+	opts := &v1.PodLogOptions{
+		Container:    container,
+		SinceSeconds: &since,
+	}
+
+	res := a.client.
+		CoreV1().
+		Pods(vars["namespace"]).
+		GetLogs(vars["pod"], opts).
+		Do().
+		StatusCode(&statusCode)
+
+	if res.Error() != nil {
+		http.Error(w, res.Error().Error(), statusCode)
+	}
+
+	b, err := res.Raw()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+
+}
+
+// StreamPodLog will start streaming logs of a container running in a pod
 func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
-	
+
 	vars := mux.Vars(r)
 	container := r.URL.Query().Get("container")
 	ctx, cancel := context.WithCancel(r.Context())
+	since := sinceSeconds(r.URL.Query().Get("sinceSeconds"))
 
-	since := int64(time.Second * 60)
 	opts := &v1.PodLogOptions{
 		Container:    container,
 		Follow:       true,
-		SinceSeconds:	&since,
-	}	
+		SinceSeconds: &since,
+	}
 
 	req := a.client.
 		CoreV1().
@@ -193,8 +239,8 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer stream.Close()
-	
-	buf := make([]byte, 1024 * 16)
+
+	buf := make([]byte, 1024*16)
 	canaryLog := []byte("unexpected stream type \"\"")
 
 	for ctx.Err() == nil {
@@ -203,7 +249,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case err == io.EOF:
 			log.Printf("%s", err.Error())
-			return 
+			return
 		case ctx.Err() != nil:
 			log.Printf("%s", ctx.Err())
 			return
@@ -212,7 +258,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 			return
 		case nread == 0:
 			log.Printf("%s", io.EOF)
-			return 
+			return
 		}
 
 		l := buf[0:nread]
@@ -232,7 +278,5 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
-	log.Printf("Done")
 
 }
