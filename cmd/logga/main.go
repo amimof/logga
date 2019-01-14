@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/spf13/pflag"
 	"gitlab.com/amimof/logga/pkg/api"
 	"gitlab.com/amimof/logga/pkg/server"
 	"log"
+	"net/http"
 )
 
 var (
@@ -35,7 +37,21 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	//r.HandleFunc(Path("/").Handler(http.FileServer(http.Dir("pkg/http/web")))
+	corsOpts := cors.New(cors.Options{
+    AllowedOrigins: []string{"http://localhost:8081"}, //you service is available and allowed for this base url 
+    AllowedMethods: []string{
+        http.MethodGet,//http methods for your app
+        http.MethodPost,
+        http.MethodPut,
+        http.MethodPatch,
+        http.MethodDelete,
+        http.MethodOptions,
+        http.MethodHead,
+		},
+    AllowedHeaders: []string{
+			"*",//or you can your header key values which you are using in your application
+		},
+	})
 
 	// Namespace routes
 	r.Path("/api/namespaces").
@@ -55,7 +71,7 @@ func main() {
 		HandlerFunc(a.GetPodLog)
 
 	s := server.NewServer()
-	s.Handler = r
+	s.Handler = corsOpts.Handler(r)
 
 	// Listen and serve!
 	err = s.Serve()

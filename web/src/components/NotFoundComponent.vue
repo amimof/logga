@@ -1,5 +1,5 @@
 <template>
-  <div class="alert alert-primary" role="alert">
+  <div class="alert alert-dark" role="alert">
     Ooops! Page not found
   </div>
 </template>
