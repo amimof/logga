@@ -4,6 +4,7 @@ import Home from './components/Home.vue'
 import NotFoundComponent from './components/NotFoundComponent.vue'
 import Namespaces from './components/Namespaces.vue'
 import Pods from './components/Pods.vue'
+import Pod from './components/Pod.vue'
 
 Vue.use(Router)
 
@@ -21,12 +22,38 @@ export default new Router({
     {
       path: '/namespaces',
       name: 'Namespaces',
-      component: Namespaces
+      component: Namespaces,
+      meta: {
+        breadcrumb: [{
+          name: 'Namespaces',
+        }]
+      }
     },
     {
       path: '/namespaces/:id/pods',
       name: 'Pods',
-      component: Pods
+      component: Pods,
+      meta: {
+        breadcrumb: [{
+          name: 'Namespaces',
+        },{
+          name: 'Pods',
+        }]
+      }
+    },
+    {
+      path: '/namespaces/:namespace/pods/:pod',
+      name: 'Pod',
+      component: Pod,
+      meta: {
+        breadcrumb: [{
+          name: 'Namespaces',
+        },{
+          name: 'Pods',
+        },{
+          name: ':pod',
+        }]
+      }      
     },
     {
       path: '*',

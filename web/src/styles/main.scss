@@ -27,6 +27,11 @@ $input-focus-bg:      $input-bg;
 $input-focus-color:   $input-color;
 $input-disabled-bg:   $gray-800;
 
+// Breadcrumbs
+$breadcrumb-padding-y:              0;
+$breadcrumb-padding-x:              0;
+$breadcrumb-bg:                     transparent;
+
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
 #app {

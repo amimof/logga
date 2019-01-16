@@ -1,15 +1,20 @@
 <template>
   <div id="container">
 
-  <div class="input-group mb-3">
-    <input type="text" v-model="namespace" v-on:change="signalChange" class="form-control" placeholder="Search Namespace" aria-label="Search Namespace" aria-describedby="search-button">
-    <div class="input-group-append">
-      <button class="btn btn-outline-primary" type="button" id="search-button">Search</button>
+    <breadcrumb/>
+
+    <div class="d-flex">
+      <h3 class="p-2">{{ signalChange().length }}</h3>
+      <div class="p-2 input-group mb-3">
+        <input type="text" v-model="searchString" @input="signalChange" class="form-control" placeholder="Search Namespace" aria-label="Search Namespace" aria-describedby="search-button">
+        <div class="input-group-append">
+          <button class="btn btn-outline-primary" type="button" id="search-button">Search</button>
+        </div>
+      </div>
     </div>
-  </div>
 
     <div class="list-group">
-      <a v-bind:href="'#/namespaces/'+ns.metadata.name+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in namespaces.items" :key="index"> 
+      <a v-bind:href="'#/namespaces/'+ns.metadata.name+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index"> 
         <div class="d-flex w-100 justify-content-between">
           <h5 class="mb-1">{{ ns.metadata.name }}</h5>
           <small>{{ ns.metadata.creationTimestamp }}</small>
@@ -22,23 +27,36 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
+import Breadcrumb from './Breadcrumb.vue'
 export default {
   name: 'Namespaces',
-  data: function() {
+  components: {
+    Breadcrumb
+  },
+  data() {
     return {
-      namespace: ''
+      searchString: ''
     }
   },
   mounted() {
-    this.$store.dispatch('getNamespaces') 
+    this.$store.dispatch('getNamespaces')
   },
-  computed: mapState([
-    'namespaces'
-  ]),
+  computed: {
+    ...mapState([
+      'namespaces'
+    ]),
+    ...mapGetters([
+      'filterNamespaces'
+    ])
+  },
   methods: {
-    signalChange: function(evt){
-      this.$store.dispatch('getNamespaces', this.namespace)
+    signalChange() {
+      let result = this.namespaces.items || [];
+      if(this.searchString.length > 0) {
+        result = this.filterNamespaces(this.searchString);
+      } 
+      return result;
     }
   }
 }
