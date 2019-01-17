@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <!-- Fixed navbar -->
-    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+    <!-- <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
         <router-link to ="/home">
           <i class="navbar-brand fab fa-linux"></i>
@@ -19,7 +19,7 @@
           </ul>
         </div>
       </div>
-    </nav>
+    </nav> -->
     <div class="container" style="padding-top: 16px;">
       <router-view/>
     </div>

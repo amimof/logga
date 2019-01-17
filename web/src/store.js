@@ -13,12 +13,12 @@ export default new Vuex.Store({
   state: {
      namespaces: {},
      pods: {},
-     pod: {},
+     pod: null,
      podLog: {}
   },
   actions: {
     getNamespaces ({ commit }) {
-      axios
+      return axios
         .get(`${apiUrl}/namespaces`)
         .then(r => r.data)
         .then(namespaces => {
@@ -42,25 +42,29 @@ export default new Vuex.Store({
         })
     },
     getPodLog ({ commit }, { namespace, pod }) {
-      axios
+      return axios
         .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log`)
         .then(r => r.data)
         .then(pod => {
-          console.log(pod)
           commit('SET_POD_LOG', pod)  
         })
     }
   },
   getters: {
-    filterNamespaces: (state) => (searchString) => {
+    filterNamespaces: (state) => (query) => {
+      let q = query || { str: "", sort: "asc" }
       let filtered = _.filter(state.namespaces.items, function(item){
-        return item.metadata.name.includes(searchString);
+        return item.metadata.name.includes(q.str);
       });
+      filtered = _.orderBy(filtered, function(item) {
+        return item.metadata.name
+      }, [q.sort])
       return filtered;
     },
-    filterPods: (state) => (searchString) => {
+    filterPods: (state) => (query) => {
+      let q = query || { str: "", sort: "desc" }
       let filtered = _.filter(state.pods.items, function(item) {
-        return item.metadata.name.includes(searchString);
+        return item.metadata.name.includes(q.str);
       });
       return filtered
     }
