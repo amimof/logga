@@ -2,26 +2,22 @@
   <div id="container">
 
     <breadcrumb/>
-      
-    <!-- <h3 class="col">{{ signalChange().length }}</h3> -->
 
-    <b-input-group :prepend="signalChange().length">
-
-      <!-- <input type="text" v-model="searchString" @input="signalChange" class="form-control" placeholder="Search Namespace" aria-label="Search Namespace" aria-describedby="search-button"> -->
+    <b-input-group :prepend="signalChange().length.toString()">
       <b-form-input v-model="searchString" @input="signalChange" placeholder="Search Namespace"></b-form-input>
-      
       <b-input-group-append>
+        <b-button v-on:click="searchString = ''" variant="outline-primary">
+          <i class="fas fa-times"></i>
+        </b-button>
         <b-button v-on:click="isSortDown = !isSortDown" variant="outline-primary">
           <i class="fas fa-sort-amount-down" v-if="isSortDown"></i>
           <i class="fas fa-sort-amount-up" v-if="!isSortDown"></i>
         </b-button>
       </b-input-group-append>
-      
       <b-dropdown text="Dropdown" variant="outline-primary" slot="append">
         <b-dropdown-item>Action C</b-dropdown-item>
         <b-dropdown-item>Action D</b-dropdown-item>
       </b-dropdown>
-
     </b-input-group>
 
     <p/>
@@ -30,18 +26,20 @@
 
     <div class="list-group" v-if="!isLoading">
       <a v-bind:href="'#/namespaces/'+ns.metadata.name+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index"> 
-        <div class="d-flex w-100 justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center">
           <h5 class="mb-1">{{ ns.metadata.name }}</h5>
           <small><span>{{ ns.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
         </div>
       </a>
     </div>
+    
     <div class="alert alert-danger" role="alert" v-if="isError">
       <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
       <p>Unable to load namespaces</p>
       <hr/>
       <p class="mb-0"><pre>{{ errMsg }}</pre></p>
     </div>
+
   </div>
 </template>
 

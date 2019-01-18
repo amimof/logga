@@ -1,47 +1,82 @@
 <template>
   <div id="container">
 
-    <Breadcrumb/>
+    <breadcrumb/>
 
-    <div class="d-flex">
-      <h3 class="p-2">{{ signalChange().length }}</h3>
-      <div class="p-2 input-group mb-3">
-        <input type="text" v-model="searchString" @input="signalChange" class="form-control" placeholder="Search Pods" aria-label="Search Namespace" aria-describedby="search-button">
-        <div class="input-group-append">
-          <button class="btn btn-outline-primary" type="button" id="search-button">Search</button>
-        </div>
-      </div>
-    </div>
+    <b-input-group :prepend="signalChange().length.toString()">
+      <b-form-input v-model="searchString" @input="signalChange" placeholder="Search Pods"></b-form-input>
+      <b-input-group-append>
+        <b-button v-on:click="searchString = ''" variant="outline-primary">
+          <i class="fas fa-times"></i>
+        </b-button>
+        <b-button v-on:click="isSortDown = !isSortDown" variant="outline-primary">
+          <i class="fas fa-sort-amount-down" v-if="isSortDown"></i>
+          <i class="fas fa-sort-amount-up" v-if="!isSortDown"></i>
+        </b-button>
+      </b-input-group-append>
+      <b-dropdown text="Dropdown" variant="outline-primary" slot="append">
+        <b-dropdown-item>Action C</b-dropdown-item>
+        <b-dropdown-item>Action D</b-dropdown-item>
+      </b-dropdown>
+    </b-input-group>
 
-    <div class="list-group">      
+    <p/>
+
+    <Loader v-if="isLoading" />
+
+    <div class="list-group" v-if="!isLoading">      
       <a v-bind:href="'#/namespaces/'+ns.metadata.namespace+'/pods/'+ns.metadata.name" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index">  
-        <div class="d-flex w-100 justify-content-between">
+        <div class="d-flex justify-content-between align-items-center">
           <h5 class="mb-1">{{ ns.metadata.name }}</h5>
-          <small>{{ ns.status.phase }}</small>
-          <small>{{ ns | numContainersReady }}/{{ ns.status.containerStatuses.length }}</small>
-          <small>{{ ns | numContainerRestarts }}</small>
-          <small>{{ ns.metadata.creationTimestamp }}</small>
+          <small><span>{{ ns.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
         </div>
       </a>
     </div>
+
+    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0">
+      No running pods found
+    </div>
+    
+    <div class="alert alert-danger" role="alert" v-if="isError">
+      <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
+      <p>Unable to load pods</p>
+      <hr/>
+      <p class="mb-0"><pre>{{ errMsg }}</pre></p>
+    </div>
+
   </div>
+
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
 import Breadcrumb from './Breadcrumb.vue'
+import Loader from './Loader.vue'
 export default {
   name: 'Pods',
   components: {
-    Breadcrumb
+    Breadcrumb,
+    Loader
   },
   data() {
     return {
-      searchString: ''
+      searchString: '',
+      isLoading: true,
+      isError: false,
+      errMsg: null,
+      isSortDown: true,
+      sortBy: "name"
     }
   },
   mounted() {
-    this.$store.dispatch('getPods', this.$route.params.id)
+    this.$store.dispatch('getPods', this.$route.params.namespace).then(() => {
+      this.isLoading = false
+    }).catch(err => {
+      this.isError = true
+      this.errMsg = err 
+    }).finally(() => {
+      this.isLoading = false
+    })
   },
   computed: {
     ...mapState([
@@ -77,11 +112,12 @@ export default {
   },
   methods: {
     signalChange() {
-      let result = this.pods.items || [];
-      if(this.searchString.length > 0) {
-        result = this.filterPods(this.searchString);
-      } 
-      return result;
+      let query = {
+        str: this.searchString,
+        sort: (this.isSortDown ? 'asc' : 'desc'),
+        phase: 'Running'
+      }
+      return this.filterPods(query);
     }
   }
 }

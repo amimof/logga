@@ -30,7 +30,7 @@ export default new Router({
       }
     },
     {
-      path: '/namespaces/:id/pods',
+      path: '/namespaces/:namespace/pods',
       name: 'Pods',
       component: Pods,
       meta: {

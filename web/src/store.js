@@ -26,7 +26,7 @@ export default new Vuex.Store({
         })
     },
     getPods ({ commit }, namespace) {
-      axios
+      return axios
         .get(`${apiUrl}/namespaces/${namespace}/pods`)
         .then(r => r.data)
         .then(pods => {
@@ -59,13 +59,21 @@ export default new Vuex.Store({
       filtered = _.orderBy(filtered, function(item) {
         return item.metadata.name
       }, [q.sort])
-      return filtered;
+      return filtered
     },
     filterPods: (state) => (query) => {
-      let q = query || { str: "", sort: "desc" }
+      let q = query || { str: "", sort: "asc", phase: "" }
       let filtered = _.filter(state.pods.items, function(item) {
         return item.metadata.name.includes(q.str);
       });
+      filtered = _.orderBy(filtered, function(item) {
+        return item.metadata.name
+      }, [q.sort])
+      if(q.phase) {
+        filtered = _.filter(filtered, function(item) {
+          return item.status.phase === q.phase
+        })
+      }
       return filtered
     }
   },
