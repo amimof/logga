@@ -1,5 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: golang:1.11
+image: docker:dind
 
 variables:
   # Please edit to your GitLab project
@@ -15,6 +15,7 @@ before_script:
   - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
   - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
   - cd $GOPATH/src/$REPO_NAME
+  - apk add --no-cache --update git make go
 
 stages:
     - test
@@ -23,16 +24,16 @@ stages:
 format:
     stage: test
     script:
-      - make fmt
-      - make test
+      - make docker_fmt
+      - make docker_build
 
 compile:
     stage: build
     script:
-      - make
+      - make docker_build
     artifacts:
       paths:
         - out/logga-linux-amd64
-        - out/logga-linux-arm
-        - out/logga-darwin-amd64
-        - out/logga-windows-amd64.exe
+        #- out/logga-linux-arm
+        #- out/logga-darwin-amd64
+        #- out/logga-windows-amd64.exe

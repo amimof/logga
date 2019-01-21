@@ -1,9 +1,11 @@
 <template>
-  <div id="container">
-    <Breadcrumb/>
-    <h4 v-if="pod" >
-      {{ pod.metadata.name }}
-    </h4>
+  <div>
+    <div class="container">
+      <Breadcrumb/>
+      <h4 v-if="pod" >
+        {{ pod.metadata.name }}
+      </h4>
+    </div>
     <LogViewer/>
   </div>
 </template>
@@ -42,6 +44,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+h4 {
+  padding-bottom: 16px;
+}
 </style>
 
 

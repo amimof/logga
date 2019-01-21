@@ -1,5 +1,5 @@
 <template>
-  <div id="container">
+  <div class="container">
 
     <breadcrumb/>
 
@@ -33,7 +33,7 @@
       </a>
     </div>
 
-    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0">
+    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading">
       No running pods found
     </div>
     

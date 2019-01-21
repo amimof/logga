@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <div class="alert alert-primary" role="alert">
       This component is not implemented yet
     </div>

@@ -42,20 +42,33 @@ darwin: dep
 windows: dep
 	CGO_ENABLED=0 GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-windows-${GOARCH}.exe cmd/logga/main.go
 
-docker_build:
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make fmt test
+build: linux darwin rpi windows
+
+docker_fmt:
+	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make fmt
+
+docker_test:
+	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make test
+
+docker_compile:
+	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make linux
+
+docker_npm_build:
+	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga/web node:8 npm install
+	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga/web node:8 npm run build
+
+docker_image_build:
 	docker build -t registry.gitlab.com/amimof/logga:${VERSION} .
 	docker tag registry.gitlab.com/amimof/logga:${VERSION} registry.gitlab.com/amimof/logga:latest
 
-docker_push:
+docker_image_push:
 	docker push registry.gitlab.com/amimof/logga:${VERSION}
 	docker push registry.gitlab.com/amimof/logga:latest
 
-docker: docker_build docker_push
-
-build: linux darwin rpi windows
+docker_build: docker_compile docker_npm_build docker_image_build docker_image_push
 
 clean:
 	-rm -rf ${BUILD_DIR}/out/
+	-rm -rf ${BUILD_DIR}/web/dist/
 
 .PHONY: linux darwin windows test fmt clean

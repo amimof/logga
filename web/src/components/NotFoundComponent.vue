@@ -1,6 +1,8 @@
 <template>
-  <div class="alert alert-dark" role="alert">
-    Ooops! Page not found
+  <div class="container">
+    <div class="alert alert-dark" role="alert">
+      Ooops! Page not found
+    </div>
   </div>
 </template>
 

@@ -20,7 +20,7 @@
         </div>
       </div>
     </nav> -->
-    <div class="container" style="padding-top: 16px;">
+    <div style="padding-top: 16px;">
       <router-view/>
     </div>
   </div>

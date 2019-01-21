@@ -22,6 +22,7 @@ type API struct {
 }
 
 func NewAPI() (*API, error) {
+
 	c, err := makeClient()
 	if err != nil {
 		return nil, err
@@ -45,7 +46,6 @@ func makeClient() (*kubernetes.Clientset, error) {
 
 // GetPods will return PodList in a namespace
 func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	statusCode := 200
 
@@ -76,7 +76,6 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 // GetPods will return a Pod in a namespace
 func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	statusCode := 200
 
@@ -108,7 +107,6 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 // Namespaces returns NamespaceList in a cluster
 func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
-
 	statusCode := 200
 
 	res := a.client.
@@ -136,7 +134,6 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 
 // GetNamespace returns a Namespace in a cluster
 func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	statusCode := 200
 
@@ -166,7 +163,7 @@ func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
 }
 
 func sinceSeconds(s string) int64 {
-	since := int64(time.Second * 60)
+	since := int64(1)
 	if s == "" {
 		return since
 	}
@@ -177,17 +174,30 @@ func sinceSeconds(s string) int64 {
 	return int64(time.Second * time.Duration(i))
 }
 
+func tailLines(s string) int64 {
+	tail := int64(1000)
+	if s == "" {
+		return tail
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return tail
+	}
+	return int64(i)
+}
+
 // GetPodLog returns container log of a container in a pod
 func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	container := r.URL.Query().Get("container")
 	statusCode := 200
-	since := sinceSeconds(r.URL.Query().Get("sinceSeconds"))
+	//since := sinceSeconds(r.URL.Query().Get("sinceSeconds"))
+	tail := tailLines(r.URL.Query().Get("tailLines"))
 
 	opts := &v1.PodLogOptions{
-		Container:    container,
-		SinceSeconds: &since,
+		Container: container,
+		//SinceSeconds: &since,
+		TailLines: &tail,
 	}
 
 	res := a.client.
@@ -213,7 +223,6 @@ func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
 
 // StreamPodLog will start streaming logs of a container running in a pod
 func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	container := r.URL.Query().Get("container")
 	ctx, cancel := context.WithCancel(r.Context())

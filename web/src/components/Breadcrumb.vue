@@ -1,13 +1,11 @@
 <template>
-  <div id="container">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item active" aria-current="page" 
-        v-for="(item, index) in $route.meta.breadcrumb" 
-        :key="index">
-        {{ item.name }}
-      </li>
-    </ol>
-  </div>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page" 
+      v-for="(item, index) in $route.meta.breadcrumb" 
+      :key="index">
+      {{ item.name }}
+    </li>
+  </ol>
 </template>
 
 <script>
