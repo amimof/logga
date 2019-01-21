@@ -51,30 +51,36 @@ export default new Vuex.Store({
     }
   },
   getters: {
-    filterNamespaces: (state) => (query) => {
-      let q = query || { str: "", sort: "asc" }
-      let filtered = _.filter(state.namespaces.items, function(item){
-        return item.metadata.name.includes(q.str);
-      });
-      filtered = _.orderBy(filtered, function(item) {
-        return item.metadata.name
-      }, [q.sort])
-      return filtered
-    },
-    filterPods: (state) => (query) => {
+    filterList: () => (list, query) => {
       let q = query || { str: "", sort: "asc", phase: "" }
-      let filtered = _.filter(state.pods.items, function(item) {
+      
+      // Remove whitespaces
+      q.str = q.str.replace(/\s/g, "");
+
+      // Filter by name
+      let filtered = _.filter(list, function(item){
         return item.metadata.name.includes(q.str);
       });
+
+      // Order by name
       filtered = _.orderBy(filtered, function(item) {
         return item.metadata.name
       }, [q.sort])
+
+      // Filter by phase
       if(q.phase) {
         filtered = _.filter(filtered, function(item) {
           return item.status.phase === q.phase
         })
       }
+      
       return filtered
+    },
+    filterNamespaces: (state, getters) => (query) => {
+      return getters.filterList(state.namespaces.items, query)
+    },
+    filterPods: (state, getters) => (query) => {
+      return getters.filterList(state.pods.items, query)
     }
   },
   mutations: {

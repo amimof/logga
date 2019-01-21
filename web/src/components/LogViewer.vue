@@ -75,7 +75,7 @@ export default {
     getLogs () {
       this.isReloading = true;
       this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod }).then(() => {
-        this.lines = this.podLog.split(/\r?\n/);;
+        this.lines = this.podLog.split(/\r?\n/);
       }).catch(err => {
         this.isError = true;
         this.errMsg = err;
