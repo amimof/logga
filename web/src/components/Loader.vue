@@ -1,9 +1,7 @@
 <template>
-  <div id="container">
-    <div class="row align-items-center justify-content-start">
-      <i class="navbar-brand fas fa-sync col-md-auto"></i>
-      <span class="d-flex row">Loading</span>
-    </div>
+  <div class="row align-items-center justify-content-start">
+    <i class="navbar-brand fas fa-sync col-md-auto"></i>
+    <span class="d-flex row">Loading</span>
   </div>
 </template>
 

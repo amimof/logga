@@ -16,7 +16,15 @@ var (
 	COMMIT    string
 	BRANCH    string
 	GOVERSION string
+
+	host string
+	port int
 )
+
+func init() {
+	pflag.StringVar(&host, "host", "localhost", "The host address on which to listen for the --port port")
+	pflag.IntVar(&port, "port", 8080, "the port to listen on for insecure connections, defaults to 8080")
+}
 
 func main() {
 
@@ -38,18 +46,18 @@ func main() {
 
 	r := mux.NewRouter()
 	corsOpts := cors.New(cors.Options{
-    AllowedOrigins: []string{"http://localhost:8081"}, //you service is available and allowed for this base url 
-    AllowedMethods: []string{
-        http.MethodGet,//http methods for your app
-        http.MethodPost,
-        http.MethodPut,
-        http.MethodPatch,
-        http.MethodDelete,
-        http.MethodOptions,
-        http.MethodHead,
+		AllowedOrigins: []string{"http://localhost:8081"}, //you service is available and allowed for this base url
+		AllowedMethods: []string{
+			http.MethodGet, //http methods for your app
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodOptions,
+			http.MethodHead,
 		},
-    AllowedHeaders: []string{
-			"*",//or you can your header key values which you are using in your application
+		AllowedHeaders: []string{
+			"*", //or you can your header key values which you are using in your application
 		},
 	})
 
@@ -70,7 +78,12 @@ func main() {
 	r.Path("/api/namespaces/{namespace}/pods/{pod}/log").
 		HandlerFunc(a.GetPodLog)
 
+	// Serve the UI
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("/logga/web/")))
+
 	s := server.NewServer()
+	s.Port = port
+	s.Host = host
 	s.Handler = corsOpts.Handler(r)
 
 	// Listen and serve!

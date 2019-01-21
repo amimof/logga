@@ -43,7 +43,7 @@ export default new Vuex.Store({
     },
     getPodLog ({ commit }, { namespace, pod }) {
       return axios
-        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log`)
+        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?tailLines=2000`)
         .then(r => r.data)
         .then(pod => {
           commit('SET_POD_LOG', pod)  
