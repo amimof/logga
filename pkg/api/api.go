@@ -97,7 +97,8 @@ func (broker *Broker) listen() {
 				select {
 				case clientMessageChan <- event:
 				case <-time.After(patience):
-					log.Print("Skipping client.")
+					//log.Print("Skipping client.")
+					continue
 				}
 			}
 		}
@@ -329,7 +330,6 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	stream, err := req.Stream()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Err	")
 		cancel()
 		return
 	}
@@ -344,12 +344,11 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		if(ctx.Err() != nil) {
-			log.Printf("Context error")
+			//log.Printf("Erro: %s", ctx.Err())
 			return
 		}
 		select {
 		case <-ctx.Done():
-			log.Printf("Context done")
 			return
 		case <-notify:
 			return
@@ -358,13 +357,13 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 
 			switch {
 			case err == io.EOF:
-				log.Printf("%s", err.Error())
+				//log.Printf("%s", err.Error())
 				return
 			case err != nil:
-				log.Printf("%s", err.Error())
+				//log.Printf("nil error %s", err.Error())
 				return
 			case nread == 0:
-				log.Printf("%s", io.EOF)
+				//log.Printf("%s", io.EOF)
 				return
 			default:
 				l := buf[0:nread]
