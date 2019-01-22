@@ -1,0 +1,23 @@
+sudo: required
+dist: stretch
+language: go
+go:
+- "1.10.x"
+- "1.10.x"
+services:
+  - docker
+
+before_install:
+  - deactivate
+  - sudo apt-get update -qq
+
+jobs:
+  include:
+    - stage: "format"
+      name: "server binary"
+      script: "make docker_format"
+    - stage: "tests"
+      name: "server unit tests"
+      script: "make docker_test"
+    
+
