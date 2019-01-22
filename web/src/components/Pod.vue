@@ -27,17 +27,14 @@ export default {
   }, 
   created() {
     this.$store.dispatch('getPod', { namespace: this.$route.params.namespace, pod: this.$route.params.pod })
-    this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod }).then(() => {
-      this.loading = false;
-    });
+    
   },
   mounted () {
     this.$route.meta.breadcrumb[2].name = this.$route.params.pod
   },
   computed: {
     ...mapState([
-      'pod',
-      'podLog'
+      'pod'
     ]),
   }
 }

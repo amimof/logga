@@ -21,28 +21,25 @@
         <nav class="navbar sticky-top border-bottom border-dark bg" style="background-color: black;">
           <a class="navbar-brand" href="#">Sticky top</a>
           <b-button-group>
-            <b-button variant="outline-primary" v-on:click="getLogs()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
+            <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
             <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
           </b-button-group>
           <b-button-group>
-            <b-button variant="outline-primary" v-on:click="toggleLargeText" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
+            <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
             <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top"><i class="fas fa-arrow-up"></i></b-button>
             <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom"><i class="fas fa-arrow-down"></i></b-button> 
+            <b-button variant="outline-primary" v-on:click="watch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
           </b-button-group>
         </nav>
         <div class="log-view">
           <table style="width: 100%">
             <tbody>
-              <tr class="log-line" v-for="(line, index) in lines" :key="index">
+              <tr class="log-line" v-for="(line, index) in podLog" :key="index">
                 <td class="log-line-number" v-bind:class="{ 'log-line-large': isLargeText }">{{ index }}</td>
                 <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText }">{{ line }}</td>
               </tr>
             </tbody>
           </table>
-          <!-- <span class="log-item" v-for="(line, index) in lines" :key="index">
-            <span class="log-line-number">{{ index }}</span>
-            <span class="log-line-text">{{ line }}</span>
-          </span> -->
         </div>
       </div>
     </div>
@@ -53,6 +50,7 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
+
 export default {
   name: 'LogViewer',
   components: {
@@ -64,18 +62,22 @@ export default {
       isLoading: true,
       isError: false,
       isLargeText: false,
+      isWatching: false,
       errMsg: null,
-      lines: []
     }
   }, 
   created() {
     this.getLogs()
   },
   methods: {
+    reload() {
+      this.closeStream()
+      this.getLogs()
+    },
     getLogs () {
       this.isReloading = true;
       this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod }).then(() => {
-        this.lines = this.podLog.split(/\r?\n/);
+        this.gotoBottom();
       }).catch(err => {
         this.isError = true;
         this.errMsg = err;
@@ -84,8 +86,18 @@ export default {
         this.isReloading = false
       });
     },
-    reloadLogs () {
-      this.isReloading = true;
+    watch() {
+      this.gotoBottom();
+      if(this.isWatching) {
+        this.closeStream()
+        this.isWatching = false;
+      } else {
+        this.$store.dispatch('streamPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod });
+        this.isWatching = true;
+      }
+    },
+    closeStream() {
+      this.$store.dispatch('closeStream')
     },
     gotoBottom () {
       window.scrollTo(0, document.body.scrollHeight);
