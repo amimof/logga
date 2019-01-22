@@ -4,6 +4,7 @@ import (
 	"io"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
+	"fmt"
 	//corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"k8s.io/client-go/rest"
@@ -19,6 +20,21 @@ import (
 
 type API struct {
 	client *kubernetes.Clientset
+	broker *Broker
+}
+
+type Broker struct {
+	// Events are pushed to this channel by the main events-gathering routine
+	Notifier chan []byte
+
+	// New client connections
+	newClients chan chan []byte
+
+	// Closed client connections
+	closingClients chan chan []byte
+
+	// Client connections registry
+	clients map[chan []byte]bool
 }
 
 func NewAPI() (*API, error) {
@@ -28,8 +44,21 @@ func NewAPI() (*API, error) {
 		return nil, err
 	}
 	return &API{
-		client: c,
+		client: c,	
+		broker: NewBroker(),
 	}, nil
+	
+}
+
+func NewBroker() *Broker {
+	broker := &Broker{
+		Notifier:       make(chan []byte, 1),
+		newClients:     make(chan chan []byte),
+		closingClients: make(chan chan []byte),
+		clients:        make(map[chan []byte]bool),
+	}
+	go broker.listen()
+	return broker
 }
 
 func makeClient() (*kubernetes.Clientset, error) {
@@ -42,6 +71,38 @@ func makeClient() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return cs, nil
+}
+
+func (broker *Broker) listen() {
+	patience := time.Second*1
+	for {
+		select {
+		case s := <-broker.newClients:
+
+			// A new client has connected.
+			// Register their message channel
+			broker.clients[s] = true
+			log.Printf("Client added. %d registered clients", len(broker.clients))
+		case s := <-broker.closingClients:
+
+			// A client has dettached and we want to
+			// stop sending them messages.
+			delete(broker.clients, s)
+			log.Printf("Removed client. %d registered clients", len(broker.clients))
+		case event := <-broker.Notifier:
+
+			// We got a new event from the outside!
+			// Send event to all connected clients
+			for clientMessageChan, _ := range broker.clients {
+				select {
+				case clientMessageChan <- event:
+				case <-time.After(patience):
+					log.Print("Skipping client.")
+				}
+			}
+		}
+	}
+
 }
 
 // GetPods will return PodList in a namespace
@@ -223,6 +284,31 @@ func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
 
 // StreamPodLog will start streaming logs of a container running in a pod
 func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming not unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	// Each connection registers its own message channel with the Broker's connections registry
+	messageChan := make(chan []byte)
+
+	// Signal the broker that we have a new connection
+	a.broker.newClients <- messageChan
+	
+	// Remove this client from the map of connected clients
+	// when this handler exits.
+	defer func() {
+		a.broker.closingClients <- messageChan
+	}()
+
+	// Set the headers related to event streaming.
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	vars := mux.Vars(r)
 	container := r.URL.Query().Get("container")
 	ctx, cancel := context.WithCancel(r.Context())
@@ -243,47 +329,55 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	stream, err := req.Stream()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Err	")
 		cancel()
 		return
 	}
 
 	defer stream.Close()
 
+	// Listen to connection close and un-register messageChan
+	notify := w.(http.CloseNotifier).CloseNotify()
+
 	buf := make([]byte, 1024*16)
 	canaryLog := []byte("unexpected stream type \"\"")
 
-	for ctx.Err() == nil {
-		nread, err := stream.Read(buf)
-
-		switch {
-		case err == io.EOF:
-			log.Printf("%s", err.Error())
-			return
-		case ctx.Err() != nil:
-			log.Printf("%s", ctx.Err())
-			return
-		case err != nil:
-			log.Printf("%s", err.Error())
-			return
-		case nread == 0:
-			log.Printf("%s", io.EOF)
+	for {
+		if(ctx.Err() != nil) {
+			log.Printf("Context error")
 			return
 		}
+		select {
+		case <-ctx.Done():
+			log.Printf("Context done")
+			return
+		case <-notify:
+			return
+		default:
+			nread, err := stream.Read(buf)
 
-		l := buf[0:nread]
-
-		if bytes.Compare(canaryLog, l) == 0 {
-			log.Printf("received 'unexpect stream type'")
-			continue
-		}
-
-		_, err = w.Write(l)
-		if err != nil {
-			log.Printf("%s", err.Error())
-			break
-		}
-		if f, ok := w.(http.Flusher); ok {
-			f.Flush()
+			switch {
+			case err == io.EOF:
+				log.Printf("%s", err.Error())
+				return
+			case err != nil:
+				log.Printf("%s", err.Error())
+				return
+			case nread == 0:
+				log.Printf("%s", io.EOF)
+				return
+			default:
+				l := buf[0:nread]
+	
+				if bytes.Compare(canaryLog, l) == 0 {
+					log.Printf("received 'unexpect stream type'")
+					continue
+				}
+				a.broker.Notifier <- l
+				fmt.Fprintf(w, "data: %s\n\n", <-messageChan)
+				flusher.Flush()
+			}
+	
 		}
 
 	}

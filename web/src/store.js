@@ -8,13 +8,15 @@ Vue.use(Vuex)
 Vue.use(VueAxios, axios)
 
 const apiUrl = 'http://localhost:8080/api'
+let eventSource;
 
 export default new Vuex.Store({
   state: {
      namespaces: {},
      pods: {},
      pod: null,
-     podLog: {}
+     podLog: [],
+     lines: []
   },
   actions: {
     getNamespaces ({ commit }) {
@@ -43,11 +45,24 @@ export default new Vuex.Store({
     },
     getPodLog ({ commit }, { namespace, pod }) {
       return axios
-        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?tailLines=2000`)
+        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?tailLines=1000`)
         .then(r => r.data)
         .then(pod => {
-          commit('SET_POD_LOG', pod)  
+          let lines = pod.split(/\r?\n/)
+          if(lines[lines.length-1] == "") {
+            lines.splice(lines.length-1, 1)
+          }
+          commit('SET_POD_LOG', lines)  
         })
+    },
+    streamPodLog ({ commit }, { namespace, pod }) {
+      eventSource = new EventSource(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?watch=true&tailLines=1000`)
+      eventSource.onmessage = function (e) {
+        commit("ADD_LINE", e.data)
+      }
+    },
+    closeStream ({ commit }) {
+      eventSource.close()
     }
   },
   getters: {
@@ -95,6 +110,12 @@ export default new Vuex.Store({
     },
     SET_POD_LOG (state, podLog) {
       state.podLog = podLog;
+    },
+    ADD_LINE (state, line) {
+      if(state.podLog.length >= 1001) {
+        state.podLog.splice(0, 1)
+      }
+      state.podLog.push(line);
     }
   }
 })
