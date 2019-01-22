@@ -13,6 +13,7 @@ let eventSource;
 export default new Vuex.Store({
   state: {
      namespaces: {},
+     recentNamespaces: [],
      pods: {},
      pod: null,
      podLog: [],
@@ -55,6 +56,9 @@ export default new Vuex.Store({
           commit('SET_POD_LOG', lines)  
         })
     },
+    addRecentNamespace({commit}, namespace) {
+      commit('ADD_RECENT_NAMESPACE', namespace)
+    },
     streamPodLog ({ commit }, { namespace, pod }) {
       eventSource = new EventSource(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?watch=true&tailLines=1000`)
       eventSource.onmessage = function (e) {
@@ -66,7 +70,7 @@ export default new Vuex.Store({
     }
   },
   getters: {
-    filterList: () => (list, query) => {
+    filterList: (state) => (list, query) => {
       let q = query || { str: "", sort: "asc", phase: "" }
       
       // Remove whitespaces
@@ -87,8 +91,7 @@ export default new Vuex.Store({
         filtered = _.filter(filtered, function(item) {
           return item.status.phase === q.phase
         })
-      }
-      
+      }      
       return filtered
     },
     filterNamespaces: (state, getters) => (query) => {
@@ -116,6 +119,17 @@ export default new Vuex.Store({
         state.podLog.splice(0, 1)
       }
       state.podLog.push(line);
+    },
+    ADD_RECENT_NAMESPACE (state, namespace) {
+      if(state.recentNamespaces.length >= 10) {
+        state.recentNamespaces.splice(0, 1)
+      }
+      let index = state.recentNamespaces.indexOf(namespace)
+      if(index > -1) {
+        state.recentNamespaces.splice(index, 1)
+      }
+      state.recentNamespaces.unshift(namespace)
+      //state.recentNamespaces = state.recentNamespaces.reverse()
     }
   }
 })

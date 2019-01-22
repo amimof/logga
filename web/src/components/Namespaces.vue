@@ -24,15 +24,31 @@
 
     <Loader v-if="isLoading" />
 
-    <div class="list-group" v-if="!isLoading">
-      <a v-bind:href="'#/namespaces/'+ns.metadata.name+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index"> 
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-1">{{ ns.metadata.name }}</h5>
-          <small><span>{{ ns.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
-        </div>
-      </a>
+    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading">
+      No matching namespaces found
     </div>
-    
+
+    <div class="row" v-if="!isLoading">
+      <div class="col" v-if="signalChange().length > 0">
+        <h4>All</h4>
+        <a v-bind:href="'#/namespaces/'+ns.metadata.name+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index"> 
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-1">{{ ns.metadata.name }}</h5>
+            <small><span>{{ ns.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+          </div>
+        </a>
+      </div>
+
+      <div class="col" v-if="recentNamespaces.length > 0">
+        <h4>Recent</h4>
+        <a v-bind:href="'#/namespaces/'+ns+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in recentNamespaces" :key="index"> 
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-1">{{ ns }}</h5>
+          </div>
+        </a>
+      </div>
+    </div>
+
     <div class="alert alert-danger" role="alert" v-if="isError">
       <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
       <p>Unable to load namespaces</p>
@@ -75,7 +91,8 @@ export default {
   },
   computed: {
     ...mapState([
-      'namespaces'
+      'namespaces',
+      'recentNamespaces'
     ]),
     ...mapGetters([
       'filterNamespaces'

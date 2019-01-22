@@ -77,6 +77,7 @@ export default {
     }).finally(() => {
       this.isLoading = false
     })
+    this.$store.dispatch('addRecentNamespace', this.$route.params.namespace)
   },
   computed: {
     ...mapState([
