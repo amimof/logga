@@ -20,7 +20,7 @@ export default new Vuex.Store({
      lines: []
   },
   actions: {
-    getNamespaces ({ commit }) {
+    getNamespaces({ commit }) {
       return axios
         .get(`${apiUrl}/namespaces`)
         .then(r => r.data)
@@ -28,7 +28,7 @@ export default new Vuex.Store({
           commit('SET_NAMESPACES', namespaces)
         })
     },
-    getPods ({ commit }, namespace) {
+    getPods({ commit }, namespace) {
       return axios
         .get(`${apiUrl}/namespaces/${namespace}/pods`)
         .then(r => r.data)
@@ -36,7 +36,7 @@ export default new Vuex.Store({
           commit('SET_PODS', pods)
         })
     },
-    getPod ({ commit }, {namespace, pod}) {
+    getPod({ commit }, {namespace, pod}) {
       axios
         .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}`)
         .then(r => r.data)
@@ -44,7 +44,7 @@ export default new Vuex.Store({
           commit('SET_POD', pod)  
         })
     },
-    getPodLog ({ commit }, { namespace, pod }) {
+    getPodLog({ commit }, { namespace, pod }) {
       return axios
         .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?tailLines=1000`)
         .then(r => r.data)
@@ -59,18 +59,18 @@ export default new Vuex.Store({
     addRecentNamespace({commit}, namespace) {
       commit('ADD_RECENT_NAMESPACE', namespace)
     },
-    streamPodLog ({ commit }, { namespace, pod }) {
+    streamPodLog({ commit }, { namespace, pod }) {
       eventSource = new EventSource(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?watch=true&tailLines=1000`)
       eventSource.onmessage = function (e) {
         commit("ADD_LINE", e.data)
       }
     },
-    closeStream ({ commit }) {
+    closeStream() {
       eventSource.close()
     }
   },
   getters: {
-    filterList: (state) => (list, query) => {
+    filterList: () => (list, query) => {
       let q = query || { str: "", sort: "asc", phase: "" }
       
       // Remove whitespaces
@@ -102,25 +102,25 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    SET_NAMESPACES (state, namespaces) {
+    SET_NAMESPACES(state, namespaces) {
       state.namespaces = namespaces
     },
-    SET_PODS (state, pods) {
+    SET_PODS(state, pods) {
       state.pods = pods
     },
-    SET_POD (state, pod) {
+    SET_POD(state, pod) {
       state.pod = pod
     },
-    SET_POD_LOG (state, podLog) {
+    SET_POD_LOG(state, podLog) {
       state.podLog = podLog;
     },
-    ADD_LINE (state, line) {
+    ADD_LINE(state, line) {
       if(state.podLog.length >= 1001) {
         state.podLog.splice(0, 1)
       }
       state.podLog.push(line);
     },
-    ADD_RECENT_NAMESPACE (state, namespace) {
+    ADD_RECENT_NAMESPACE(state, namespace) {
       if(state.recentNamespaces.length >= 10) {
         state.recentNamespaces.splice(0, 1)
       }
@@ -129,7 +129,6 @@ export default new Vuex.Store({
         state.recentNamespaces.splice(index, 1)
       }
       state.recentNamespaces.unshift(namespace)
-      //state.recentNamespaces = state.recentNamespaces.reverse()
     }
   }
 })

@@ -5,10 +5,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/pflag"
-	"gitlab.com/amimof/logga/pkg/api"
-	"gitlab.com/amimof/logga/pkg/server"
+	"github.com/amimof/logga/pkg/api"
+	"github.com/amimof/logga/pkg/server"
 	"log"
 	"net/http"
+	"time"
 )
 
 var (
@@ -84,6 +85,8 @@ func main() {
 	s := server.NewServer()
 	s.Port = port
 	s.Host = host
+	s.ReadTimeout = 60 * time.Second
+	s.WriteTimeout = 60 * time.Second
 	s.Handler = corsOpts.Handler(r)
 
 	// Listen and serve!

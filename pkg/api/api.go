@@ -108,8 +108,9 @@ func (broker *Broker) listen() {
 
 // GetPods will return PodList in a namespace
 func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
+	
+	var statusCode int
 	vars := mux.Vars(r)
-	statusCode := 200
 
 	res := a.client.
 		CoreV1().
@@ -123,6 +124,7 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 	if res.Error() != nil {
 		http.Error(w, res.Error().Error(), statusCode)
+		return
 	}
 
 	b, err := res.Raw()
@@ -138,8 +140,9 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 // GetPods will return a Pod in a namespace
 func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
+	
+	var statusCode int
 	vars := mux.Vars(r)
-	statusCode := 200
 
 	res := a.client.
 		CoreV1().
@@ -154,6 +157,7 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 	if res.Error() != nil {
 		http.Error(w, res.Error().Error(), statusCode)
+		return
 	}
 
 	b, err := res.Raw()
@@ -169,7 +173,8 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 // Namespaces returns NamespaceList in a cluster
 func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
-	statusCode := 200
+
+	var statusCode int
 
 	res := a.client.
 		CoreV1().
@@ -180,7 +185,11 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
-		http.Error(w, res.Error().Error(), statusCode)
+		if statusCode == 0 {
+			statusCode = http.StatusInternalServerError
+		}
+		http.Error(w, res.Error().Error(), http.StatusInternalServerError)
+		return
 	}
 
 	b, err := res.Raw()
@@ -196,8 +205,9 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 
 // GetNamespace returns a Namespace in a cluster
 func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
+	
+	var statusCode int
 	vars := mux.Vars(r)
-	statusCode := 200
 
 	res := a.client.
 		CoreV1().
