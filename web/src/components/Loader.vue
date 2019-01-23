@@ -1,17 +1,15 @@
 <template>
-  <div class="row align-items-center justify-content-start">
-    <i class="navbar-brand fas fa-sync col-md-auto"></i>
-    <span class="d-flex row">Loading</span>
+  <div class="d-flex justify-content-center">
+    <pulse-loader color="rgb(0, 123, 255)"></pulse-loader>
   </div>
 </template>
 
 <script>
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 export default {
   name: 'Loader',
-  data () {
-    return {
-      loading: true
-    }
+  components: {
+    PulseLoader
   }
 }
 </script>
