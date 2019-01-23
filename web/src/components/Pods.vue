@@ -33,16 +33,11 @@
       </a>
     </div>
 
-    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading">
+    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading && !isError">
       No running pods found
     </div>
     
-    <div class="alert alert-danger" role="alert" v-if="isError">
-      <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
-      <p>Unable to load pods</p>
-      <hr/>
-      <p class="mb-0"><pre>{{ errMsg }}</pre></p>
-    </div>
+    <ErrorCard title="Unable to load pods" :error="error" v-if="isError"/>
 
   </div>
 
@@ -52,18 +47,20 @@
 import { mapState, mapGetters } from 'vuex'
 import Breadcrumb from './Breadcrumb.vue'
 import Loader from './Loader.vue'
+import ErrorCard from './ErrorCard.vue'
 export default {
   name: 'Pods',
   components: {
     Breadcrumb,
-    Loader
+    Loader,
+    ErrorCard
   },
   data() {
     return {
       searchString: '',
       isLoading: true,
       isError: false,
-      errMsg: null,
+      error: null,
       isSortDown: true,
       sortBy: "name"
     }
@@ -73,7 +70,7 @@ export default {
       this.isLoading = false
     }).catch(err => {
       this.isError = true
-      this.errMsg = err 
+      this.error = err 
     }).finally(() => {
       this.isLoading = false
     })
