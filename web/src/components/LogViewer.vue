@@ -3,7 +3,7 @@
     <div class="container">
 
       <Loader v-if="isLoading" />
-      
+    
       <div class="alert alert-info" role="alert" v-if="!podLog && !isLoading">
         Pod logs are no longer available
       </div>
@@ -13,7 +13,9 @@
     <div v-if="!isLoading && podLog" style="background-color: black; height: 100%" class="border-top border-secondary">
       <div class="container">
         <nav class="navbar sticky-top border-bottom border-dark bg" style="background-color: black;">
-          <a class="navbar-brand" href="#">Sticky top</a>
+          <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
+            <b-dropdown-item v-for="(container, index) in pod.spec.containers" :key="index" :active="index == selectedContainer" v-on:click="setSelectedContainer(index)">{{ container.name }}</b-dropdown-item>
+          </b-dropdown>
           <b-button-group>
             <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
             <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
@@ -22,7 +24,7 @@
             <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
             <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top"><i class="fas fa-arrow-up"></i></b-button>
             <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom"><i class="fas fa-arrow-down"></i></b-button> 
-            <b-button variant="outline-primary" v-on:click="watch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
+            <b-button variant="outline-primary" v-on:click="toggleWatch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
           </b-button-group>
         </nav>
         <div class="log-view">
@@ -60,19 +62,21 @@ export default {
       isLargeText: false,
       isWatching: false,
       error: null,
+      selectedContainer: 0
     }
   }, 
-  created() {
+  mounted() {
     this.getLogs()
+    this.selectedContainer = 0;
   },
   methods: {
     reload() {
       this.closeStream()
       this.getLogs()
     },
-    getLogs () {
+    getLogs() {
       this.isReloading = true;
-      this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod }).then(() => {
+      this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod, container: this.pod.spec.containers[this.selectedContainer].name }).then(() => {
         this.gotoBottom();
       }).catch(err => {
         this.isError = true;
@@ -83,17 +87,20 @@ export default {
       });
     },
     watch() {
+      this.$store.dispatch('streamPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod, container: this.pod.spec.containers[this.selectedContainer].name });
+      this.isWatching = true;
       this.gotoBottom();
+    },
+    toggleWatch() {
       if(this.isWatching) {
         this.closeStream()
-        this.isWatching = false;
       } else {
-        this.$store.dispatch('streamPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod });
-        this.isWatching = true;
+        this.watch();
       }
     },
     closeStream() {
       this.$store.dispatch('closeStream')
+      this.isWatching = false;
     },
     gotoBottom () {
       window.scrollTo(0, document.body.scrollHeight);
@@ -103,10 +110,20 @@ export default {
     },
     toggleLargeText() {
       this.isLargeText = !this.isLargeText;
+    },
+    setSelectedContainer(index) {
+      this.selectedContainer = index;
+      this.getLogs();
+      if(this.isWatching) {
+        this.closeStream();
+        this.watch();
+      }
     }
+
   },
   computed: {
     ...mapState([
+      'pod',
       'podLog'
     ]),
   }

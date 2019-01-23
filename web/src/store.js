@@ -44,9 +44,9 @@ export default new Vuex.Store({
           commit('SET_POD', pod)  
         })
     },
-    getPodLog({ commit }, { namespace, pod }) {
+    getPodLog({ commit }, { namespace, pod, container }) {
       return axios
-        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?tailLines=1000`)
+        .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?container=${container}&tailLines=1000`)
         .then(r => r.data)
         .then(pod => {
           let lines = pod.split(/\r?\n/)
@@ -59,8 +59,8 @@ export default new Vuex.Store({
     addRecentNamespace({commit}, namespace) {
       commit('ADD_RECENT_NAMESPACE', namespace)
     },
-    streamPodLog({ commit }, { namespace, pod }) {
-      eventSource = new EventSource(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?watch=true&tailLines=1000`)
+    streamPodLog({ commit }, { namespace, pod, container }) {
+      eventSource = new EventSource(`${apiUrl}/namespaces/${namespace}/pods/${pod}/log?watch=true&container=${container}&tailLines=1000`)
       eventSource.onmessage = function (e) {
         commit("ADD_LINE", e.data)
       }
