@@ -37,7 +37,7 @@ export default new Vuex.Store({
         })
     },
     getPod({ commit }, {namespace, pod}) {
-      axios
+      return axios
         .get(`${apiUrl}/namespaces/${namespace}/pods/${pod}`)
         .then(r => r.data)
         .then(pod => {

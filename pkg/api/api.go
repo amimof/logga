@@ -123,6 +123,9 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
+		if statusCode == 0 {
+			statusCode = http.StatusInternalServerError
+		}
 		http.Error(w, res.Error().Error(), statusCode)
 		return
 	}
@@ -156,6 +159,9 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
+		if statusCode == 0 {
+			statusCode = http.StatusInternalServerError
+		}
 		http.Error(w, res.Error().Error(), statusCode)
 		return
 	}
@@ -188,7 +194,7 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 		if statusCode == 0 {
 			statusCode = http.StatusInternalServerError
 		}
-		http.Error(w, res.Error().Error(), http.StatusInternalServerError)
+		http.Error(w, res.Error().Error(), statusCode)
 		return
 	}
 
@@ -219,6 +225,9 @@ func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
+		if statusCode == 0 {
+			statusCode = http.StatusInternalServerError
+		}
 		http.Error(w, res.Error().Error(), statusCode)
 		return
 	}
@@ -280,7 +289,11 @@ func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
+		if statusCode == 0 {
+			statusCode = http.StatusInternalServerError
+		}
 		http.Error(w, res.Error().Error(), statusCode)
+		return
 	}
 
 	b, err := res.Raw()

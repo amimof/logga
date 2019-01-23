@@ -24,7 +24,7 @@
 
     <Loader v-if="isLoading" />
 
-    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading">
+    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading && !isError">
       No matching namespaces found
     </div>
 
@@ -39,22 +39,11 @@
         </a>
       </div>
 
-      <div class="col" v-if="recentNamespaces.length > 0">
-        <h4>Recent</h4>
-        <a v-bind:href="'#/namespaces/'+ns+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in recentNamespaces" :key="index"> 
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-1">{{ ns }}</h5>
-          </div>
-        </a>
-      </div>
+      <RecentNamespacesList v-if="recentNamespaces.length > 0 && !isError" />
+
     </div>
 
-    <div class="alert alert-danger" role="alert" v-if="isError">
-      <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
-      <p>Unable to load namespaces</p>
-      <hr/>
-      <p class="mb-0"><pre>{{ errMsg }}</pre></p>
-    </div>
+    <ErrorCard title="Unable to load namespaces" :error="error" v-if="isError"/>
 
   </div>
 </template>
@@ -63,18 +52,23 @@
 import { mapState, mapGetters } from 'vuex'
 import Breadcrumb from './Breadcrumb.vue'
 import Loader from './Loader.vue'
+import ErrorCard from './ErrorCard.vue'
+import RecentNamespacesList from './RecentNamespacesList.vue'
+
 export default {
   name: 'Namespaces',
   components: {
     Breadcrumb,
-    Loader
+    Loader,
+    ErrorCard,
+    RecentNamespacesList
   },
   data() {
     return {
       searchString: '',
       isLoading: true,
       isError: false,
-      errMsg: null,
+      error: null,
       isSortDown: true,
       sortBy: "name"
     }
@@ -84,7 +78,7 @@ export default {
       this.isLoading = false
     }).catch(error => {
       this.isError = true
-      this.errMsg = error
+      this.error = error
     }).finally(() => {
       this.isLoading = false;
     })

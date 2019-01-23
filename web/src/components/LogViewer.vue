@@ -4,12 +4,6 @@
 
       <Loader v-if="isLoading" />
       
-      <div class="alert alert-danger" role="alert" v-if="isError">
-        <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
-        <p>Unable to load pod logs</p>
-        <hr/>
-        <p class="mb-0"><pre>{{ errMsg }}</pre></p>
-      </div>
       <div class="alert alert-info" role="alert" v-if="!podLog && !isLoading">
         Pod logs are no longer available
       </div>
@@ -50,11 +44,13 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
+import ErrorCard from './ErrorCard.vue'
 
 export default {
   name: 'LogViewer',
   components: {
-    Loader
+    Loader,
+    ErrorCard
   },
   data () {
     return {
@@ -63,7 +59,7 @@ export default {
       isError: false,
       isLargeText: false,
       isWatching: false,
-      errMsg: null,
+      error: null,
     }
   }, 
   created() {
@@ -80,7 +76,7 @@ export default {
         this.gotoBottom();
       }).catch(err => {
         this.isError = true;
-        this.errMsg = err;
+        this.error = err;
       }).finally(() => {
         this.isLoading = false;
         this.isReloading = false
