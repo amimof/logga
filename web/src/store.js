@@ -12,12 +12,16 @@ let eventSource;
 
 export default new Vuex.Store({
   state: {
-     namespaces: {},
-     recentNamespaces: [],
-     pods: {},
-     pod: null,
-     podLog: [],
-     lines: []
+    namespaces: {},
+    recentNamespaces: [],
+    pods: {},
+    pod: null,
+    podLog: [],
+    lines: [],
+    nsSort: 'asc',
+    podSort: 'asc',
+    nsSearchString: '',
+    podSearchString: ''
   },
   actions: {
     getNamespaces({ commit }) {
@@ -67,39 +71,57 @@ export default new Vuex.Store({
     },
     closeStream() {
       eventSource.close()
+    },
+    setNamespaceSearchString({ commit }, searchString) {
+      commit('SET_NAMESPACE_SEARCH_STRING', searchString)
+    },
+    setPodSearchString({ commit }, searchString) {
+      commit('SET_POD_SEARCH_STRING', searchString)
+    },
+    setNamespaceSort({ commit }, sort) {
+      commit('SET_NAMESPACE_SORT', sort)
+    },
+    setPodSort({ commit }, sort) {
+      commit('SET_POD_SORT', sort)
     }
   },
   getters: {
-    filterList: () => (list, query) => {
-      let q = query || { str: "", sort: "asc", phase: "" }
+    sortList: () => (list, sort) => {
+      return _.orderBy(list, function(item) {
+        return item.metadata.name
+      }, [sort])
+    },
+    filterList: () => (list, searchString) => {
+      let q = searchString || ""
       
       // Remove whitespaces
-      q.str = q.str.replace(/\s/g, "");
+      q = q.replace(/\s/g, "")
 
       // Filter by name
       let filtered = _.filter(list, function(item){
-        return item.metadata.name.includes(q.str);
+        return item.metadata.name.includes(q);
       });
 
-      // Order by name
-      filtered = _.orderBy(filtered, function(item) {
-        return item.metadata.name
-      }, [q.sort])
-
-      // Filter by phase
-      if(q.phase) {
-        filtered = _.filter(filtered, function(item) {
-          return item.status.phase === q.phase
-        })
-      }      
       return filtered
     },
-    filterNamespaces: (state, getters) => (query) => {
-      return getters.filterList(state.namespaces.items, query)
+    filterNamespaces: (state, getters) => (searchString) => {
+      state.nsSearchString = searchString;
+      return getters.filterList(state.namespaces.items, searchString)
     },
-    filterPods: (state, getters) => (query) => {
-      return getters.filterList(state.pods.items, query)
-    }
+    filterPods: (state, getters) => (searchString) => {
+      state.podSearchString = searchString;
+      return getters.filterList(state.pods.items, searchString)
+    },
+    sortNamespaces: (state, getters) => (sort) => {
+      state.nsSort = sort;
+      let list = getters.filterNamespaces(state.nsSearchString)
+      return getters.sortList(list, sort)
+    },
+    sortPods: (state, getters) => (sort) => {
+      state.podSort = sort;
+      let list = getters.filterPods(state.podSearchString);
+      return getters.sortList(list, sort)
+    },
   },
   mutations: {
     SET_NAMESPACES(state, namespaces) {
@@ -129,6 +151,18 @@ export default new Vuex.Store({
         state.recentNamespaces.splice(index, 1)
       }
       state.recentNamespaces.unshift(namespace)
-    }
+    },
+    SET_NAMESPACE_SEARCH_STRING(state, searchString) {
+      state.nsSearchString = searchString;
+    },
+    SET_NAMESPACE_SORT(state, sort) {
+      state.nsSort = sort
+    },
+    SET_POD_SEARCH_STRING(state, searchString) {
+      state.podSearchString = searchString;
+    },
+    SET_POD_SORT(state, sort) {
+      state.podSort = sort
+    },
   }
 })

@@ -1,6 +1,5 @@
 <template>
-  <div class="col" v-if="recentNamespaces.length > 0">
-    <h4>Recent</h4>
+  <div class="list-group">
     <a v-bind:href="'#/namespaces/'+ns+'/pods'" class="list-group-item list-group-item-action" v-for="(ns, index) in recentNamespaces" :key="index"> 
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-1">{{ ns }}</h5>
@@ -12,7 +11,7 @@
 <script>
 import { mapState } from 'vuex'
 export default {
-  name: 'Namespaces',
+  name: 'RecentNamespacesList',
   computed: {
     ...mapState([
       'recentNamespaces'

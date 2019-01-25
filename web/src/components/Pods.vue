@@ -3,10 +3,10 @@
 
     <breadcrumb/>
 
-    <b-input-group :prepend="signalChange().length.toString()">
-      <b-form-input v-model="searchString" @input="signalChange" placeholder="Search Pods"></b-form-input>
+    <b-input-group :prepend="items.length.toString()">
+      <b-form-input v-model="str" placeholder="Search Pods"></b-form-input>
       <b-input-group-append>
-        <b-button v-on:click="searchString = ''" variant="outline-primary">
+        <b-button v-on:click="str = ''" variant="outline-primary">
           <i class="fas fa-times"></i>
         </b-button>
         <b-button v-on:click="isSortDown = !isSortDown" variant="outline-primary">
@@ -25,15 +25,15 @@
     <Loader v-if="isLoading" />
 
     <div class="list-group" v-if="!isLoading">      
-      <a v-bind:href="'#/namespaces/'+ns.metadata.namespace+'/pods/'+ns.metadata.name" class="list-group-item list-group-item-action" v-for="(ns, index) in signalChange()" :key="index">  
+      <a v-bind:href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name" class="list-group-item list-group-item-action" v-for="(item, index) in items" :key="index">  
         <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-1">{{ ns.metadata.name }}</h5>
-          <small><span>{{ ns.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+          <h5 class="mb-1">{{ item.metadata.name }}</h5>
+          <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
         </div>
       </a>
     </div>
 
-    <div class="alert alert-info" role="alert" v-if="signalChange().length == 0 && !isLoading && !isError">
+    <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
       No running pods found
     </div>
     
@@ -57,12 +57,10 @@ export default {
   },
   data() {
     return {
-      searchString: '',
       isLoading: true,
       isError: false,
       error: null,
-      isSortDown: true,
-      sortBy: "name"
+      str: ''
     }
   },
   mounted() {
@@ -78,11 +76,30 @@ export default {
   },
   computed: {
     ...mapState([
-      'pods'
+      'pods',
+      'podSort'
     ]),
     ...mapGetters([
-      'filterPods'
-    ])
+      'filterPods',
+      'sortPods'
+    ]),
+    isSortDown: {
+      get() {
+        return this.podSort == 'asc' ? true : false
+      },
+      set(sort) {
+        this.$store.dispatch('setPodSort', sort ? 'asc' : 'desc')
+      }
+    },
+    items() {
+      let result = this.filterPods(this.str);
+      if(this.isSortDown) {
+        result = this.sortPods('asc')
+      } else {
+        result = this.sortPods('desc')
+      }
+      return result
+    }
   },
   filters: {
     numContainersReady: function(pod) {
@@ -106,16 +123,6 @@ export default {
         numRestarts += pod.status.containerStatuses[i].restartCount;
       }
       return numRestarts;
-    }
-  },
-  methods: {
-    signalChange() {
-      let query = {
-        str: this.searchString,
-        sort: (this.isSortDown ? 'asc' : 'desc'),
-        phase: 'Running'
-      }
-      return this.filterPods(query);
     }
   }
 }
