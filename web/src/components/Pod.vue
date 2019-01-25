@@ -45,9 +45,6 @@ export default {
     })
     this.$store.dispatch('addRecentNamespace', this.$route.params.namespace)
   },
-  mounted () {
-    this.$route.meta.breadcrumb[2].name = this.$route.params.pod
-  },
   computed: {
     ...mapState([
       'pod'

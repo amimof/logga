@@ -21,7 +21,7 @@ export default new Vuex.Store({
     nsSort: 'asc',
     podSort: 'asc',
     nsSearchString: '',
-    podSearchString: ''
+    podSearchString: '',
   },
   actions: {
     getNamespaces({ commit }) {

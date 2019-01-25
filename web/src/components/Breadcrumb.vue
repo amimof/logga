@@ -1,30 +1,47 @@
 <template>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item active" aria-current="page" 
-      v-for="(item, index) in $route.meta.breadcrumb" 
-      :key="index">
-      {{ item.name }}
-    </li>
-  </ol>
+  <b-breadcrumb :items="items" />
 </template>
 
 <script>
-import { mapState } from 'vuex'
 export default {
   name: 'Breadcrumb',
-  data () {
-    return {
-      breadcrumbList: []
-    }
-  },
   computed: {
-    ...mapState([
-      'currentPath'
-    ]),
-  },
-  watch: {
-    '$route' () {
-      this.breadcrumbList = this.$route.meta.breadcrumb
+    items() {
+      let bc = this.$route.matched;
+      let res = [];
+      switch(bc[0].name) {
+        case 'Namespaces':
+          res.push({
+            text: 'namespaces',
+            to: { name: 'Namespaces' }
+          });
+          break;
+        case 'Pods':
+          res.push({
+            text: 'namespaces',
+            to: { name: 'Namespaces' }
+          })
+          res.push({
+            text: this.$route.params.namespace,
+            to: { name: 'Pods', namespace: this.$route.params.namespace }
+          })
+          break;
+        case 'Pod':
+          res.push({
+            text: 'namespaces',
+            to: { name: 'Namespaces' }
+          })
+          res.push({
+            text: this.$route.params.namespace,
+            to: { name: 'Pods', namespace: this.$route.params.namespace }
+          })
+          res.push({
+            text: this.$route.params.pod,
+            to: { name: 'Pod', pod: this.$route.params.pod }
+          })
+          break;
+      }
+      return res
     }
   }
 }

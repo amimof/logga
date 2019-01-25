@@ -10,14 +10,15 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 export default {
   name: 'NamespacesList',
   props: {
     items: {
       type: Array,
       required: true,
-      default: []
+      default: () => {
+        return [];
+      }
     }
   }
 }
