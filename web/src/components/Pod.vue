@@ -49,6 +49,10 @@ export default {
     ...mapState([
       'pod'
     ]),
+  },
+  beforeRouteLeave (to, from, next) {
+    this.$store.dispatch('closeStream');
+    next()
   }
 }
 </script>
