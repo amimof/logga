@@ -28,15 +28,12 @@ $input-focus-color:   $input-color;
 $input-disabled-bg:   $gray-800;
 
 // Breadcrumbs
-$breadcrumb-padding-y:              0;
-$breadcrumb-padding-x:              0;
+$breadcrumb-margin-bottom: 0;
 $breadcrumb-bg:                     transparent;
 
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
 #app {
-  //font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  //margin-top: 60px;
 }

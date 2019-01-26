@@ -1,7 +1,9 @@
 <template>
   <div class="container">
 
-    <breadcrumb/>
+    <Nav/>
+    
+    <p/>
 
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Pods"></b-form-input>
@@ -45,13 +47,13 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Breadcrumb from './Breadcrumb.vue'
+import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 export default {
   name: 'Pods',
   components: {
-    Breadcrumb,
+    Nav,
     Loader,
     ErrorCard
   },
