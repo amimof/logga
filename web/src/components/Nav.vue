@@ -24,33 +24,16 @@ export default {
     Breadcrumb,
     Switches
   },
-  data() {
-    return {
-      enabled: true
-    }
-  },
   computed: {
     ...mapState([
       'theme'
     ]),
     isDark: {
       get() {
-        return this.enabled;
+        return this.theme == 'dark' ? true : false;
       },
-      set() {
-        let t;
-        if(this.enabled) {
-          t = {
-            button: 'outline-primary'
-          }
-          this.enabled = false
-        } else {
-          t = {
-            button: 'primary'
-          }
-          this.enabled = true
-        }
-        this.$store.dispatch('setTheme', t)
+      set(val) {
+        this.$store.dispatch('setTheme', val ? 'dark' : 'light')
       }
     }
   }

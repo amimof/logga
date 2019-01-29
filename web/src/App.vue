@@ -1,5 +1,6 @@
 <template>
-  <div id="app">
+  <div id="app" :style="{'background-color': variant}">
+  <!-- <div id="app"> -->
     <div style="padding-top: 16px;">
       <router-view/>
     </div>
@@ -7,11 +8,24 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   name: 'App',
-  components: {}
+  components: {},
+  computed: {
+    ...mapState([
+      'theme'
+    ]),
+    variant() {
+      if(this.theme == 'dark') {
+        return '#212429'
+      } else {
+        return '#fff'
+      }
+    }  
+  },
 }
 </script>
 
-<style>
+<style lang="scss">
 </style>

@@ -3,9 +3,30 @@
 @import "../../node_modules/bootstrap/scss/variables";
 @import "../../node_modules/bootstrap/scss/mixins";
 
+$theme: dark !default;
+
+$theme-dark: (
+  body-bg: $gray-900
+);
+$theme-light: (
+  body-bg: white
+);
+
+@function getTheme($themeName) {
+  @if $themeName == 'dark' {
+    @return $theme-dark;
+  } @else {
+    @return $theme-light;
+  }
+}
+
+@function themed($themeName, $key) {
+  @return map-get(getTheme($themeName), $key);
+}
+
 // General
 $body-color: rgba($white, 0.87);
-$body-bg: $gray-900;
+$body-bg: themed($theme, 'body-bg');
 $border-color: $gray-700;
 
 // List Group
@@ -32,8 +53,14 @@ $breadcrumb-margin-bottom: 0;
 $breadcrumb-bg:                     transparent;
 
 @import "../../node_modules/bootstrap/scss/bootstrap";
-
+h4 {
+  mix-blend-mode: difference;
+}
+body, html {
+  height: 100%;
+}
 #app {
+  min-height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -22,9 +22,7 @@ export default new Vuex.Store({
     podSort: 'asc',
     nsSearchString: '',
     podSearchString: '',
-    theme: {
-      button: 'outline-primary'
-    }
+    theme: 'dark'
   },
   actions: {
     getNamespaces({ commit }) {
