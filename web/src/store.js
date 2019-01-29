@@ -22,6 +22,7 @@ export default new Vuex.Store({
     podSort: 'asc',
     nsSearchString: '',
     podSearchString: '',
+    theme: 'dark'
   },
   actions: {
     getNamespaces({ commit }) {
@@ -70,7 +71,9 @@ export default new Vuex.Store({
       }
     },
     closeStream() {
-      eventSource.close()
+      if(eventSource) {
+        eventSource.close()
+      }
     },
     setNamespaceSearchString({ commit }, searchString) {
       commit('SET_NAMESPACE_SEARCH_STRING', searchString)
@@ -83,6 +86,9 @@ export default new Vuex.Store({
     },
     setPodSort({ commit }, sort) {
       commit('SET_POD_SORT', sort)
+    },
+    setTheme({ commit }, theme) {
+      commit('SET_THEME', theme)
     }
   },
   getters: {
@@ -164,5 +170,8 @@ export default new Vuex.Store({
     SET_POD_SORT(state, sort) {
       state.podSort = sort
     },
+    SET_THEME(state, theme) {
+      state.theme = theme;
+    }
   }
 })

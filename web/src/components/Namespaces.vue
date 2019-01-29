@@ -1,7 +1,9 @@
 <template>
   <div class="container">
 
-    <breadcrumb/>
+    <Nav/>
+    
+    <p/>
 
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Namespace"></b-form-input>
@@ -42,7 +44,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Breadcrumb from './Breadcrumb.vue'
+import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 import NamespacesList from './NamespacesList.vue'
@@ -51,7 +53,7 @@ import RecentNamespacesList from './RecentNamespacesList.vue'
 export default {
   name: 'Namespaces',
   components: {
-    Breadcrumb,
+    Nav,
     Loader,
     ErrorCard,
     NamespacesList,
@@ -61,7 +63,6 @@ export default {
     return {
       isLoading: true,
       isError: false,
-      //isSortDown: true,
       error: null,
     }
   },
@@ -80,7 +81,8 @@ export default {
       'namespaces',
       'recentNamespaces',
       'nsSearchString',
-      'nsSort'
+      'nsSort',
+      'theme'
     ]),
     ...mapGetters([
       'filterNamespaces',

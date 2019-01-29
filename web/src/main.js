@@ -11,9 +11,6 @@ import '../node_modules/bootstrap/dist/js/bootstrap.min.js';
 import '../node_modules/lodash/lodash.min.js';
 import './styles/main.scss'
 
-// import 'bootstrap/dist/css/bootstrap.css'
-// import 'bootstrap-vue/dist/bootstrap-vue.css'
-
 Vue.config.productionTip = false
 Vue.use(store)
 Vue.use(BootstrapVue);

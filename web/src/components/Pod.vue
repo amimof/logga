@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="container">
-      <Breadcrumb/>
+      <Nav/>
+      <p/>
       <Loader v-if="isLoading" />
       <h4 v-if="pod" >
         {{ pod.metadata.name }}
@@ -15,14 +16,14 @@
 
 <script>
 import { mapState } from 'vuex'
-import Breadcrumb from './Breadcrumb.vue'
+import Nav from './Nav.vue'
 import LogViewer from './LogViewer.vue'
 import ErrorCard from './ErrorCard.vue'
 import Loader from './Loader.vue'
 export default {
   name: 'Pod',
   components: {
-    Breadcrumb,
+    Nav,
     LogViewer,
     ErrorCard,
     Loader

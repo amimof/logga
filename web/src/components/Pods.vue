@@ -1,7 +1,9 @@
 <template>
   <div class="container">
 
-    <breadcrumb/>
+    <Nav/>
+    
+    <p/>
 
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Pods"></b-form-input>
@@ -24,14 +26,26 @@
 
     <Loader v-if="isLoading" />
 
-    <div class="list-group" v-if="!isLoading">      
+    <!-- <div class="list-group" v-if="!isLoading">      
       <a v-bind:href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name" class="list-group-item list-group-item-action" v-for="(item, index) in items" :key="index">  
         <div class="d-flex justify-content-between align-items-center">
           <h5 class="mb-1">{{ item.metadata.name }}</h5>
           <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
         </div>
       </a>
-    </div>
+    </div> -->
+
+    <b-list-group>
+      <b-list-group-item 
+        v-for="(item, index) in items" :key="index"
+        :href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name"
+        :variant="variant">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="mb-1">{{ item.metadata.name }}</h5>
+          <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+        </div>
+      </b-list-group-item>
+    </b-list-group>
 
     <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
       No running pods found
@@ -45,13 +59,13 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Breadcrumb from './Breadcrumb.vue'
+import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 export default {
   name: 'Pods',
   components: {
-    Breadcrumb,
+    Nav,
     Loader,
     ErrorCard
   },
@@ -77,7 +91,8 @@ export default {
   computed: {
     ...mapState([
       'pods',
-      'podSort'
+      'podSort',
+      'theme'
     ]),
     ...mapGetters([
       'filterPods',
@@ -89,6 +104,13 @@ export default {
       },
       set(sort) {
         this.$store.dispatch('setPodSort', sort ? 'asc' : 'desc')
+      }
+    },
+    variant() {
+      if(this.theme == 'dark') {
+        return 'default'
+      } else {
+        return 'light'
       }
     },
     items() {
