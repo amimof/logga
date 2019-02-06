@@ -23,16 +23,16 @@
     <Loader v-if="isLoading" />
 
     <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
-      No matching namespaces found
+      No namespaces found
     </div>
 
     <div class="row" v-if="!isLoading && !isError">
       <div class="col" v-if="items.length > 0">
-        <h4>All</h4>
+        <h6 v-if="recentNamespaces.length > 0">All</h6>
         <NamespacesList :items="items"/>
       </div>
       <div class="col" v-if="recentNamespaces.length > 0">
-        <h4>Recent</h4>
+        <h6>Recent</h6>
         <RecentNamespacesList class="col" />
       </div>
     </div>

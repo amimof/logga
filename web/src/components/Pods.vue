@@ -16,40 +16,18 @@
           <i class="fas fa-sort-amount-up" v-if="!isSortDown"></i>
         </b-button>
       </b-input-group-append>
-      <b-dropdown text="Dropdown" variant="outline-primary" slot="append">
-        <b-dropdown-item>Action C</b-dropdown-item>
-        <b-dropdown-item>Action D</b-dropdown-item>
-      </b-dropdown>
     </b-input-group>
 
     <p/>
 
     <Loader v-if="isLoading" />
 
-    <!-- <div class="list-group" v-if="!isLoading">      
-      <a v-bind:href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name" class="list-group-item list-group-item-action" v-for="(item, index) in items" :key="index">  
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-1">{{ item.metadata.name }}</h5>
-          <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
-        </div>
-      </a>
-    </div> -->
-
-    <b-list-group>
-      <b-list-group-item 
-        v-for="(item, index) in items" :key="index"
-        :href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name"
-        :variant="variant">
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-1">{{ item.metadata.name }}</h5>
-          <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
-        </div>
-      </b-list-group-item>
-    </b-list-group>
-
     <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
-      No running pods found
+      No pods found
     </div>
+
+    <PodsList :items="items" />
+    
     
     <ErrorCard title="Unable to load pods" :error="error" v-if="isError"/>
 
@@ -62,12 +40,14 @@ import { mapState, mapGetters } from 'vuex'
 import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
+import PodsList from './PodsList.vue'
 export default {
   name: 'Pods',
   components: {
     Nav,
     Loader,
-    ErrorCard
+    ErrorCard,
+    PodsList
   },
   data() {
     return {
@@ -120,31 +100,10 @@ export default {
       } else {
         result = this.sortPods('desc')
       }
+      result = _.filter(result, function(i) { 
+        return i.status.phase === 'Running'; 
+      });
       return result
-    }
-  },
-  filters: {
-    numContainersReady: function(pod) {
-      if(!pod) {
-        return 0;
-      }
-      var numReady = 0;
-      for(let i = 0; i < pod.status.containerStatuses.length; i++) {
-        if(pod.status.containerStatuses[i].ready) {
-          numReady++;
-        }
-      }
-      return numReady;
-    },
-    numContainerRestarts: function(pod) {
-      if(!pod) {
-        return 0;
-      }
-      var numRestarts = 0;
-      for(let i = 0; i < pod.status.containerStatuses.length; i++)  {
-        numRestarts += pod.status.containerStatuses[i].restartCount;
-      }
-      return numRestarts;
     }
   }
 }
