@@ -13,9 +13,19 @@
     <div v-if="!isLoading && podLog" :style="{'background-color': variant, 'height': '100%'}" class="border-top border-secondary">
       <div class="container">
         <nav class="navbar sticky-top border-bottom bg" :class="{'border-light': theme == 'light', 'border-dark': theme == 'dark' }" :style="{'background-color': variant}">
-          <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
-            <b-dropdown-item v-for="(container, index) in pod.spec.containers" :key="index" :active="index == selectedContainer" v-on:click="setSelectedContainer(index)">{{ container.name }}</b-dropdown-item>
-          </b-dropdown>
+          
+          <div class="row align-items-center">
+            <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
+              <b-dropdown-item 
+                v-for="(container, index) in pod.spec.containers" :key="index" 
+                :active="index == selectedContainer"
+                v-on:click="setSelectedContainer(index)">
+                {{ container.name }}
+              </b-dropdown-item>
+            </b-dropdown>
+            <span class="log-length">{{ podLog.length }}</span>
+          </div>
+
           <b-button-group>
             <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
             <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
@@ -30,7 +40,9 @@
         <div class="log-view" :style="{'background-color': variant}">
           <table style="width: 100%">
             <tbody>
-              <tr class="log-line" v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" v-for="(line, index) in podLog" :key="index">
+              <tr class="log-line" 
+                v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
+                v-for="(line, index) in podLog" :key="index">
                 <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index }}</td>
                 <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
               </tr>
@@ -46,13 +58,11 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
-import ErrorCard from './ErrorCard.vue'
 
 export default {
   name: 'LogViewer',
   components: {
     Loader,
-    ErrorCard
   },
   data () {
     return {
@@ -190,6 +200,11 @@ export default {
 }
 .log-line {
   font-size: 12px;
+}
+.log-length {
+  mix-blend-mode: difference;
+  font-family: Menlo,Monaco,Consolas,monospace;
+  color: rgb(108, 117, 125);
 }
 </style>
 

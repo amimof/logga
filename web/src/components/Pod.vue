@@ -4,9 +4,6 @@
       <Nav/>
       <p/>
       <Loader v-if="isLoading" />
-      <h4 v-if="pod" >
-        {{ pod.metadata.name }}
-      </h4>
 
       <ErrorCard title="Unable to load pod" :error="error" v-if="isError"/>
     </div>
