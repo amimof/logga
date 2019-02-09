@@ -100,9 +100,6 @@ export default {
       } else {
         result = this.sortPods('desc')
       }
-      result = _.filter(result, function(i) { 
-        return i.status.phase === 'Running'; 
-      });
       return result
     }
   }

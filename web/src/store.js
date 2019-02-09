@@ -22,7 +22,9 @@ export default new Vuex.Store({
     podSort: 'asc',
     nsSearchString: '',
     podSearchString: '',
-    theme: 'dark'
+    theme: 'dark',
+    maxLines: 1000,
+    modifierLines: 0
   },
   actions: {
     getNamespaces({ commit }) {
@@ -127,7 +129,7 @@ export default new Vuex.Store({
       state.podSort = sort;
       let list = getters.filterPods(state.podSearchString);
       return getters.sortList(list, sort)
-    },
+    }
   },
   mutations: {
     SET_NAMESPACES(state, namespaces) {
@@ -143,8 +145,9 @@ export default new Vuex.Store({
       state.podLog = podLog;
     },
     ADD_LINE(state, line) {
-      if(state.podLog.length >= 1001) {
+      if(state.podLog.length >= state.maxLines) {
         state.podLog.splice(0, 1)
+        state.modifierLines += 1;
       }
       state.podLog.push(line);
     },
