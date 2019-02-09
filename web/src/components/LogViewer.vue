@@ -23,7 +23,7 @@
                 {{ container.name }}
               </b-dropdown-item>
             </b-dropdown>
-            <span class="log-length">{{ podLog.length }}</span>
+            <span class="log-length">{{ podLog.length }}/{{ maxLines }}</span>
           </div>
 
           <b-button-group>
@@ -43,7 +43,7 @@
               <tr class="log-line" 
                 v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
                 v-for="(line, index) in podLog" :key="index">
-                <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index }}</td>
+                <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart }}</td>
                 <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
               </tr>
             </tbody>
@@ -72,7 +72,8 @@ export default {
       isLargeText: false,
       isWatching: false,
       error: null,
-      selectedContainer: 0
+      selectedContainer: 0,
+      modifier: 0
     }
   }, 
   mounted() {
@@ -83,11 +84,12 @@ export default {
     reload() {
       this.closeStream()
       this.getLogs()
+      this.$store.dispatch('resetLineStart');
     },
     getLogs() {
       this.isReloading = true;
       this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod, container: this.pod.spec.containers[this.selectedContainer].name }).then(() => {
-        this.gotoBottom();
+        //this.gotoBottom();
       }).catch(err => {
         this.isError = true;
         this.error = err;
@@ -116,7 +118,7 @@ export default {
       window.scrollTo(0, document.body.scrollHeight);
     },
     gotoTop () {
-      window.scrollTo(0, 133);
+      window.scrollTo(0, 83);
     },
     toggleLargeText() {
       this.isLargeText = !this.isLargeText;
@@ -135,7 +137,9 @@ export default {
     ...mapState([
       'pod',
       'podLog',
-      'theme'
+      'theme',
+      'maxLines',
+      'lineStart'
     ]),
     variant() {
       if(this.theme == 'dark') {
