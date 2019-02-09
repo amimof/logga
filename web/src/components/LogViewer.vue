@@ -43,7 +43,7 @@
               <tr class="log-line" 
                 v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
                 v-for="(line, index) in podLog" :key="index">
-                <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+modifierLines }}</td>
+                <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart }}</td>
                 <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
               </tr>
             </tbody>
@@ -84,6 +84,7 @@ export default {
     reload() {
       this.closeStream()
       this.getLogs()
+      this.$store.dispatch('resetLineStart');
     },
     getLogs() {
       this.isReloading = true;
@@ -117,7 +118,7 @@ export default {
       window.scrollTo(0, document.body.scrollHeight);
     },
     gotoTop () {
-      window.scrollTo(0, 133);
+      window.scrollTo(0, 83);
     },
     toggleLargeText() {
       this.isLargeText = !this.isLargeText;
@@ -138,7 +139,7 @@ export default {
       'podLog',
       'theme',
       'maxLines',
-      'modifierLines'
+      'lineStart'
     ]),
     variant() {
       if(this.theme == 'dark') {

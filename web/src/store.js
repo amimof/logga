@@ -24,7 +24,7 @@ export default new Vuex.Store({
     podSearchString: '',
     theme: 'dark',
     maxLines: 1000,
-    modifierLines: 0
+    lineStart: 0
   },
   actions: {
     getNamespaces({ commit }) {
@@ -91,6 +91,9 @@ export default new Vuex.Store({
     },
     setTheme({ commit }, theme) {
       commit('SET_THEME', theme)
+    },
+    resetLineStart({ commit }) {
+      commit('SET_LINE_START', 0);
     }
   },
   getters: {
@@ -147,7 +150,7 @@ export default new Vuex.Store({
     ADD_LINE(state, line) {
       if(state.podLog.length >= state.maxLines) {
         state.podLog.splice(0, 1)
-        state.modifierLines += 1;
+        state.lineStart += 1;
       }
       state.podLog.push(line);
     },
@@ -175,6 +178,9 @@ export default new Vuex.Store({
     },
     SET_THEME(state, theme) {
       state.theme = theme;
+    },
+    SET_LINE_START(state, num) {
+      state.lineStart = num;
     }
   }
 })
