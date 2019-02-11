@@ -45,7 +45,7 @@
                 <tr class="log-line" 
                   v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
                   v-for="(line, index) in podLog" :key="index">
-                  <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart }}</td>
+                  <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart+1 }}</td>
                   <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
                 </tr>
               </tbody>
@@ -82,16 +82,20 @@ export default {
     this.getLogs()
     this.selectedContainer = 0;
   },
+  updated() {
+    this.gotoBottom();
+  },
   methods: {
     reload() {
       this.closeStream()
       this.getLogs()
       this.$store.dispatch('resetLineStart');
+      this.gotoBottom();
     },
     getLogs() {
       this.isReloading = true;
       this.$store.dispatch('getPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod, container: this.pod.spec.containers[this.selectedContainer].name }).then(() => {
-        //this.gotoBottom();
+        this.gotoBottom();
       }).catch(err => {
         this.isError = true;
         this.error = err;
