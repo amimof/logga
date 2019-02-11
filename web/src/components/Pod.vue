@@ -1,10 +1,7 @@
 <template>
-  <div>
+  <div class="h-100">
     <div class="container">
-      <Nav/>
-      <p/>
       <Loader v-if="isLoading" />
-
       <ErrorCard title="Unable to load pod" :error="error" v-if="isError"/>
     </div>
     <LogViewer v-if="!isError && !isLoading"/>
@@ -13,14 +10,12 @@
 
 <script>
 import { mapState } from 'vuex'
-import Nav from './Nav.vue'
 import LogViewer from './LogViewer.vue'
 import ErrorCard from './ErrorCard.vue'
 import Loader from './Loader.vue'
 export default {
   name: 'Pod',
   components: {
-    Nav,
     LogViewer,
     ErrorCard,
     Loader
@@ -56,9 +51,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-h4 {
-  padding-bottom: 16px;
-}
 </style>
 
 

@@ -1,14 +1,16 @@
 <template>
-  <div class="row align-items-center">
-    <div class="logo col">logga</div>
-    
-    <Breadcrumb class="col" />
-    <div class="row text-right align-items-center">
-      <switches class="col" v-model="isDark" color="default"></switches>
-      <span class="app-ver col">v1.0.0</span>
-      <span class="github-link col">
-        <a href="https://github.com/amimof/logga"><i class="fab fa-github text-dark"></i></a>
-      </span>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="logo col">logga</div>
+      
+      <Breadcrumb class="col" />
+      <div class="row text-right align-items-center">
+        <switches class="col" v-model="isDark" color="default"></switches>
+        <span class="app-ver col">v1.0.0</span>
+        <span class="github-link col">
+          <a href="https://github.com/amimof/logga"><i class="fab fa-github text-dark"></i></a>
+        </span>
+      </div>
     </div>
   </div>
 </template>

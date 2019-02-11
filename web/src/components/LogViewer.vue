@@ -1,57 +1,59 @@
 <template>
-  <div>
-    <div class="container">
-
-      <Loader v-if="isLoading" />
+  <div class="h-100">
     
+    <div class="container">
+      <Loader v-if="isLoading" />
       <div class="alert alert-info" role="alert" v-if="!podLog && !isLoading">
         Pod logs are no longer available
       </div>
-      
     </div>
 
-    <div v-if="!isLoading && podLog" :style="{'background-color': variant, 'height': '100%'}" class="border-top border-secondary">
-      <div class="container">
-        <nav class="navbar sticky-top border-bottom bg" :class="{'border-light': theme == 'light', 'border-dark': theme == 'dark' }" :style="{'background-color': variant}">
-          
-          <div class="row align-items-center">
-            <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
-              <b-dropdown-item 
-                v-for="(container, index) in pod.spec.containers" :key="index" 
-                :active="index == selectedContainer"
-                v-on:click="setSelectedContainer(index)">
-                {{ container.name }}
-              </b-dropdown-item>
-            </b-dropdown>
-            <span class="log-length">{{ podLog.length }}/{{ maxLines }}</span>
-          </div>
+    <div v-if="!isLoading && podLog" :style="{'background-color': variant, 'border-light': theme == 'light', 'border-dark': theme == 'dark'}" class="border-top h-100">
+      <div>
+        <nav class="navbar sticky-top border-bottom bg" :class="{'border-light': theme == 'light', 'border-dark': theme == 'dark'}" :style="{'background-color': variant}">
+          <div class="container">
+            <div class="row align-items-center">
+              <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
+                <b-dropdown-header>containers</b-dropdown-header>
+                <b-dropdown-item
+                variant="secondary"
+                  v-for="(container, index) in pod.spec.containers" :key="index" 
+                  :active="index == selectedContainer"
+                  v-on:click="setSelectedContainer(index)">
+                  {{ container.name }}
+                </b-dropdown-item>
+              </b-dropdown>
+              <span class="log-length">{{ podLog.length }}/{{ maxLines }}</span>
+            </div>
 
-          <b-button-group>
-            <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
-            <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
-          </b-button-group>
-          <b-button-group>
-            <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
-            <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top"><i class="fas fa-arrow-up"></i></b-button>
-            <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom"><i class="fas fa-arrow-down"></i></b-button> 
-            <b-button variant="outline-primary" v-on:click="toggleWatch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
-          </b-button-group>
+            <b-button-group>
+              <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
+              <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
+            </b-button-group>
+            <b-button-group>
+              <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top"><i class="fas fa-arrow-up"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom"><i class="fas fa-arrow-down"></i></b-button> 
+              <b-button variant="outline-primary" v-on:click="toggleWatch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
+            </b-button-group>
+          </div>
         </nav>
         <div class="log-view" :style="{'background-color': variant}">
-          <table style="width: 100%">
-            <tbody>
-              <tr class="log-line" 
-                v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
-                v-for="(line, index) in podLog" :key="index">
-                <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart }}</td>
-                <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="container">
+            <table style="width: 100%">
+              <tbody>
+                <tr class="log-line" 
+                  v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
+                  v-for="(line, index) in podLog" :key="index">
+                  <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart }}</td>
+                  <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -75,7 +77,7 @@ export default {
       selectedContainer: 0,
       modifier: 0
     }
-  }, 
+  },
   mounted() {
     this.getLogs()
     this.selectedContainer = 0;
@@ -118,7 +120,7 @@ export default {
       window.scrollTo(0, document.body.scrollHeight);
     },
     gotoTop () {
-      window.scrollTo(0, 83);
+      window.scrollTo(0, 49);
     },
     toggleLargeText() {
       this.isLargeText = !this.isLargeText;
@@ -152,7 +154,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .log-view {
   padding-top: 16px;
   font-family: Menlo,Monaco,Consolas,monospace;
