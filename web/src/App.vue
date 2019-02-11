@@ -1,17 +1,18 @@
 <template>
   <div id="app" :style="{'background-color': variant}">
-  <!-- <div id="app"> -->
-    <div style="padding-top: 16px;">
-      <router-view/>
-    </div>
+    <Nav/>
+    <router-view/>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import Nav from './components/Nav.vue'
 export default {
   name: 'App',
-  components: {},
+  components: {
+    Nav,
+  },
   computed: {
     ...mapState([
       'theme'

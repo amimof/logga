@@ -1,10 +1,6 @@
 <template>
   <div class="container">
 
-    <Nav/>
-    
-    <p/>
-
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Pods"></b-form-input>
       <b-input-group-append>
@@ -37,14 +33,12 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 import PodsList from './PodsList.vue'
 export default {
   name: 'Pods',
   components: {
-    Nav,
     Loader,
     ErrorCard,
     PodsList

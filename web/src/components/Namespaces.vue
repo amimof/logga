@@ -1,10 +1,5 @@
 <template>
   <div class="container">
-
-    <Nav/>
-    
-    <p/>
-
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Namespace"></b-form-input>
       <b-input-group-append>
@@ -44,7 +39,6 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Nav from './Nav.vue'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 import NamespacesList from './NamespacesList.vue'
@@ -53,7 +47,6 @@ import RecentNamespacesList from './RecentNamespacesList.vue'
 export default {
   name: 'Namespaces',
   components: {
-    Nav,
     Loader,
     ErrorCard,
     NamespacesList,
