@@ -4,6 +4,7 @@
       v-for="(item, index) in items" :key="index"
       v-bind:href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name"
       :variant="variant"
+      :active="active == index"
       :v-if="item.status.phase == 'Running'">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-1">{{ item.metadata.name }}</h5>
@@ -24,6 +25,12 @@ export default {
       required: true,
       default: () => {
         return [];
+      }
+    },
+    active: {
+      type: Number,
+      default: () => {
+        return 0
       }
     }
   },

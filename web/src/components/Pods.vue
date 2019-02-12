@@ -22,7 +22,7 @@
       No pods found
     </div>
 
-    <PodsList :items="items" />
+    <PodsList :items="items" :active="activePod" />
     
     
     <ErrorCard title="Unable to load pods" :error="error" v-if="isError"/>
@@ -36,6 +36,13 @@ import { mapState, mapGetters } from 'vuex'
 import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 import PodsList from './PodsList.vue'
+
+const keyup = 38;
+const keydown = 40;
+const keyenter = 13;
+const keytab = 9;
+const keychars = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 109]
+
 export default {
   name: 'Pods',
   components: {
@@ -48,10 +55,12 @@ export default {
       isLoading: true,
       isError: false,
       error: null,
-      str: ''
+      str: '',
+      activePod: 0
     }
   },
   mounted() {
+    window.addEventListener("keydown", this.handlePress);
     this.$store.dispatch('getPods', this.$route.params.namespace).then(() => {
       this.isLoading = false
     }).catch(err => {
@@ -61,6 +70,37 @@ export default {
       this.isLoading = false
     })
     this.$store.dispatch('addRecentNamespace', this.$route.params.namespace)
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handlePress);
+  },
+  methods: {
+    handlePress() {
+
+      // Up down
+    	if (event.keyCode == keyup && this.activePod > 0) {
+      	this.activePod--
+      } else if (event.keyCode == keydown && this.activePod < (this.items.length-1)) {
+      	this.activePod++
+      } else if (keychars.indexOf(event.keyCode) > -1) {
+        this.activePod = 0;
+        this.$el.querySelector('input').focus();
+      }
+
+      // Enter
+      if (event.keyCode == keyenter) {
+        let n = this.items[this.activePod].metadata.namespace;
+        let p = this.items[this.activePod].metadata.name;
+        this.$router.push({ path: `/namespaces/${n}/pods/${p}` })
+      }
+
+      // Blur and clear input
+      if (event.keyCode == 27) {
+        this.$el.querySelector('input').blur();
+        this.str = "";
+      }
+
+    }
   },
   computed: {
     ...mapState([

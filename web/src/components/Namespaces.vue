@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <b-input-group :prepend="items.length.toString()">
+    <b-input-group ref="searchbos" :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Namespace"></b-form-input>
       <b-input-group-append>
         <b-button v-on:click="str = ''" variant="outline-primary">
@@ -24,11 +24,11 @@
     <div class="row" v-if="!isLoading && !isError">
       <div class="col" v-if="items.length > 0">
         <h6 v-if="recentNamespaces.length > 0">All</h6>
-        <NamespacesList :items="items"/>
+        <NamespacesList :items="items" :active="activeNamespace"/>
       </div>
-      <div class="col" v-if="recentNamespaces.length > 0">
+      <div class="col-4" v-if="recentNamespaces.length > 0">
         <h6>Recent</h6>
-        <RecentNamespacesList class="col" />
+        <RecentNamespacesList class="col"/>
       </div>
     </div>
 
@@ -44,6 +44,12 @@ import ErrorCard from './ErrorCard.vue'
 import NamespacesList from './NamespacesList.vue'
 import RecentNamespacesList from './RecentNamespacesList.vue'
 
+const keyup = 38;
+const keydown = 40;
+const keyenter = 13;
+const keytab = 9;
+const keychars = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 109]
+
 export default {
   name: 'Namespaces',
   components: {
@@ -57,9 +63,11 @@ export default {
       isLoading: true,
       isError: false,
       error: null,
+      activeNamespace: 0
     }
   },
   mounted() {
+    window.addEventListener("keydown", this.handlePress);
     this.$store.dispatch('getNamespaces').then(() => {
       this.isLoading = false
     }).catch(error => {
@@ -68,6 +76,36 @@ export default {
     }).finally(() => {
       this.isLoading = false;
     })
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handlePress);
+  },
+  methods: {
+    handlePress() {
+
+      // Up down
+    	if (event.keyCode == keyup && this.activeNamespace > 0) {
+      	this.activeNamespace--
+      } else if (event.keyCode == keydown && this.activeNamespace < (this.items.length-1)) {
+      	this.activeNamespace++
+      } else if (keychars.indexOf(event.keyCode) > -1) {
+        this.activeNamespace = 0;
+        this.$el.querySelector('input').focus();
+      }
+
+      // Enter
+      if (event.keyCode == keyenter) {
+        let i = this.items[this.activeNamespace].metadata.name;
+        this.$router.push({ path: `/namespaces/${i}/pods` })
+      }
+
+      // Blur and clear input
+      if (event.keyCode == 27) {
+        this.$el.querySelector('input').blur();
+        this.str = "";
+      }
+
+    }
   },
   computed: {
     ...mapState([
