@@ -1,12 +1,12 @@
 <template>
   <div class="container">
-    <b-input-group ref="searchbos" :prepend="items.length.toString()">
+    <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Namespace"></b-form-input>
       <b-input-group-append>
-        <b-button v-on:click="str = ''" variant="outline-primary">
+        <b-button v-on:click="str = ''" variant="outline-secondary">
           <i class="fas fa-times"></i>
         </b-button>
-        <b-button v-on:click="isSortDown = !isSortDown" variant="outline-primary">
+        <b-button v-on:click="isSortDown = !isSortDown" variant="outline-secondary">
           <i class="fas fa-sort-amount-down" v-if="isSortDown"></i>
           <i class="fas fa-sort-amount-up" v-if="!isSortDown"></i>
         </b-button>
@@ -17,9 +17,7 @@
 
     <Loader v-if="isLoading" />
 
-    <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
-      No namespaces found
-    </div>
+    <p><h5 v-if="items.length == 0 && !isLoading && !isError">No namespaces found</h5></p>
 
     <div class="row" v-if="!isLoading && !isError">
       <div class="col" v-if="items.length > 0">
@@ -47,7 +45,6 @@ import RecentNamespacesList from './RecentNamespacesList.vue'
 const keyup = 38;
 const keydown = 40;
 const keyenter = 13;
-const keytab = 9;
 const keychars = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 109]
 
 export default {
@@ -113,7 +110,6 @@ export default {
       'recentNamespaces',
       'nsSearchString',
       'nsSort',
-      'theme'
     ]),
     ...mapGetters([
       'filterNamespaces',

@@ -18,12 +18,9 @@
 
     <Loader v-if="isLoading" />
 
-    <div class="alert alert-info" role="alert" v-if="items.length == 0 && !isLoading && !isError">
-      No pods found
-    </div>
+    <p><h5 v-if="items.length == 0 && !isLoading && !isError">No pods found</h5></p>
 
     <PodsList :items="items" :active="activePod" />
-    
     
     <ErrorCard title="Unable to load pods" :error="error" v-if="isError"/>
 
