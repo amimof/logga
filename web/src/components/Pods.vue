@@ -4,10 +4,10 @@
     <b-input-group :prepend="items.length.toString()">
       <b-form-input v-model="str" placeholder="Search Pods"></b-form-input>
       <b-input-group-append>
-        <b-button v-on:click="str = ''" variant="outline-primary">
+        <b-button v-on:click="str = ''" variant="outline-secondary">
           <i class="fas fa-times"></i>
         </b-button>
-        <b-button v-on:click="isSortDown = !isSortDown" variant="outline-primary">
+        <b-button v-on:click="isSortDown = !isSortDown" variant="outline-secondary">
           <i class="fas fa-sort-amount-down" v-if="isSortDown"></i>
           <i class="fas fa-sort-amount-up" v-if="!isSortDown"></i>
         </b-button>
@@ -40,7 +40,6 @@ import PodsList from './PodsList.vue'
 const keyup = 38;
 const keydown = 40;
 const keyenter = 13;
-const keytab = 9;
 const keychars = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 109]
 
 export default {
@@ -78,10 +77,10 @@ export default {
     handlePress() {
 
       // Up down
-    	if (event.keyCode == keyup && this.activePod > 0) {
-      	this.activePod--
+      if (event.keyCode == keyup && this.activePod > 0) {
+        this.activePod--
       } else if (event.keyCode == keydown && this.activePod < (this.items.length-1)) {
-      	this.activePod++
+        this.activePod++
       } else if (keychars.indexOf(event.keyCode) > -1) {
         this.activePod = 0;
         this.$el.querySelector('input').focus();
@@ -105,8 +104,7 @@ export default {
   computed: {
     ...mapState([
       'pods',
-      'podSort',
-      'theme'
+      'podSort'
     ]),
     ...mapGetters([
       'filterPods',
@@ -118,13 +116,6 @@ export default {
       },
       set(sort) {
         this.$store.dispatch('setPodSort', sort ? 'asc' : 'desc')
-      }
-    },
-    variant() {
-      if(this.theme == 'dark') {
-        return 'default'
-      } else {
-        return 'light'
       }
     },
     items() {

@@ -3,11 +3,10 @@
     <b-list-group-item 
       v-for="(item, index) in items" :key="index"
       v-bind:href="'#/namespaces/'+item.metadata.namespace+'/pods/'+item.metadata.name"
-      :variant="variant"
       :active="active == index"
       :v-if="item.status.phase == 'Running'">
       <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-1">{{ item.metadata.name }}</h5>
+        <span class="mb-1">{{ item.metadata.name }}</span>
         <small></small>
         <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
       </div>
@@ -16,7 +15,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 export default {
   name: 'PodsList',
   props: {
@@ -31,18 +29,6 @@ export default {
       type: Number,
       default: () => {
         return 0
-      }
-    }
-  },
-  computed: {
-    ...mapState([
-      'theme'
-    ]),
-    variant() {
-      if(this.theme == 'dark') {
-        return 'default'
-      } else {
-        return 'light'
       }
     }
   },

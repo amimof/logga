@@ -8,15 +8,15 @@
       </div>
     </div>
 
-    <div v-if="!isLoading && podLog" :style="{'background-color': variant, 'border-light': theme == 'light', 'border-dark': theme == 'dark'}" class="border-top h-100">
+    <div v-if="!isLoading && podLog" class="border-top border-dark h-100" style="background-color: black">
       <div>
-        <nav class="navbar sticky-top border-bottom bg" :class="{'border-light': theme == 'light', 'border-dark': theme == 'dark'}" :style="{'background-color': variant}">
+        <nav class="navbar sticky-top border-bottom border-dark bg" style="background-color: black">
           <div class="container">
             <div class="row align-items-center">
               <b-dropdown class="navbar-brand" :text="pod.spec.containers[selectedContainer].name" variant="outline-primary" slot="append">
                 <b-dropdown-header>containers</b-dropdown-header>
                 <b-dropdown-item
-                variant="secondary"
+                  variant="secondary"
                   v-for="(container, index) in pod.spec.containers" :key="index" 
                   :active="index == selectedContainer"
                   v-on:click="setSelectedContainer(index)">
@@ -38,15 +38,14 @@
             </b-button-group>
           </div>
         </nav>
-        <div class="log-view" :style="{'background-color': variant}">
+        <div class="log-view">
           <div class="container">
             <table style="width: 100%">
               <tbody>
                 <tr class="log-line" 
-                  v-bind:class="{'log-line-light': theme == 'light', 'log-line-dark': theme == 'dark'}" 
                   v-for="(line, index) in podLog" :key="index">
-                  <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText, 'log-line-number-light': theme == 'light', 'log-line-number-dark': theme == 'dark' }">{{ index+lineStart+1 }}</td>
-                  <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText, 'log-line-text-light': theme == 'light', 'log-line-text-dark': theme == 'dark' }">{{ line }}</td>
+                  <td class="log-line-number"  v-bind:class="{ 'log-line-large': isLargeText }">{{ index+lineStart+1 }}</td>
+                  <td class="log-line-text" v-bind:class="{ 'log-line-large': isLargeText }">{{ line }}</td>
                 </tr>
               </tbody>
             </table>
@@ -143,23 +142,16 @@ export default {
     ...mapState([
       'pod',
       'podLog',
-      'theme',
       'maxLines',
       'lineStart'
-    ]),
-    variant() {
-      if(this.theme == 'dark') {
-        return 'black'
-      } else {
-        return 'white'
-      }
-    }
+    ])
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .log-view {
+  background-color: black;
   padding-top: 16px;
   font-family: Menlo,Monaco,Consolas,monospace;
 }
@@ -167,13 +159,9 @@ export default {
   table-layout: fixed;
   width: 100%;
 }
-.log-line-dark:hover {
+.log-line:hover {
   background-color: #22262b;
   color: #ededed;
-}
-.log-line-light:hover {
-  background-color: #ededed;
-  color: #22262b;
 }
 .log-line-number {
   padding-right: 10px;
@@ -182,12 +170,6 @@ export default {
   width: 60px;
   color: #72767b;
   text-align: right;
-}
-.log-line-number-dark {
-  border-right: 1px #272b30 solid;
-}
-.log-line-number-light {
-  border-right: 1px #ededed solid;
 }
 .log-line-text {
   padding: 0 10px;
@@ -198,12 +180,7 @@ export default {
   overflow-wrap: break-word;
   min-width: 0;
   word-wrap: break-word;
-}
-.log-line-text-dark {
   color: rgb(209, 209, 209);
-}
-.log-line-text-light {
-  color: #272b30;
 }
 .log-line-large {
   font-size: 14px;
