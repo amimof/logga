@@ -3,42 +3,27 @@
 @import "../../node_modules/bootstrap/scss/variables";
 @import "../../node_modules/bootstrap/scss/mixins";
 
-$theme: dark !default;
-
-$theme-dark: (
-  body-bg: $gray-900
-);
-$theme-light: (
-  body-bg: white
-);
-
-@function getTheme($themeName) {
-  @if $themeName == 'dark' {
-    @return $theme-dark;
-  } @else {
-    @return $theme-light;
-  }
-}
-
-@function themed($themeName, $key) {
-  @return map-get(getTheme($themeName), $key);
-}
-
 // General
-$body-color: rgba($white, 0.87);
-$body-bg: themed($theme, 'body-bg');
+$body-color: rgba($gray-100, 0.87);
+$body-bg: $gray-900;
 $border-color: $gray-700;
+$blue: rgb(0,135,215);
 
 // List Group
 $list-group-bg:                     transparent;
-$list-group-border-color:           $border-color;
-$list-group-hover-bg:               $border-color;
-$list-group-active-color:           $body-color;
+$list-group-border-color:           transparent;
+$list-group-hover-bg:               $gray-700;
+$list-group-border-radius:          0;
+$list-group-active-bg:              $body-color;
+$list-group-active-color:           $gray-900;
 $list-group-action-color:           $body-color;
 $list-group-action-hover-color:     $body-color;
 $list-group-action-active-color:    $body-color;
 $list-group-action-active-bg:       $gray-700;
+$list-group-active-border-color:    transparent;
 $list-group-disabled-bg:            transparent;
+$list-group-item-padding-x:         10px;
+$list-group-item-padding-y:         8px;
 
 // Inputs
 $input-bg:            transparent;
@@ -48,13 +33,38 @@ $input-focus-bg:      $input-bg;
 $input-focus-color:   $input-color;
 $input-disabled-bg:   $gray-800;
 
+// Buttons
+$btn-border-radius:    0;
+$btn-border-radius-lg: 0;
+$btn-border-radius-sm: 0;
+
+// Forms
+$input-border-radius:    0;
+$input-border-radius-lg: 0;
+$input-border-radius-sm: 0;
+
 // Breadcrumbs
 $breadcrumb-margin-bottom: 0;
 $breadcrumb-bg:                     transparent;
 
+// Dropdowns
+$dropdown-bg:                       $gray-900;
+$dropdown-header-color:             $gray-500;
+$dropdown-link-color:               $body-color;
+$dropdown-link-hover-color:         $body-color;
+$dropdown-link-hover-bg:            $gray-700;
+$dropdown-link-active-color:        $gray-900;
+$dropdown-link-active-bg:           $body-color;
+$dropdown-border-radius:            0;
+
+
+// Alerts
+$alert-border-radius: 0;
+
 @import "../../node_modules/bootstrap/scss/bootstrap";
-h5, h6 {
-  mix-blend-mode: difference;
+
+.list-group, button {
+  font-family: Monaco;
 }
 body, html {
   font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;

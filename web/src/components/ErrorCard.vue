@@ -1,11 +1,11 @@
 <template>  
-  <div class="alert alert-danger" role="alert">
-    <h4 class="alert-heading">Oops! <span class="navbar-brand fas fa-sad-tear"></span></h4>
-    <p>{{ title }} <i class="fas fa-arrow-circle-right" v-b-toggle.collapse1 v-b-tooltip.hover title="Show/Hide details"></i></p>
+  <b-alert show variant="danger">
+    <h4 class="alert-heading">{{ title }}</h4>
+    <p>{{ description }} <i class="fas fa-arrow-circle-right" v-b-toggle.collapse1 v-b-tooltip.hover title="Show/Hide details"></i></p>
     <b-collapse id="collapse1" class="mt-2">
       <p class="mb-0"><pre>{{ error }}</pre></p>
     </b-collapse>
-  </div>
+  </b-alert>
 </template>
 
 <script>
@@ -15,13 +15,34 @@ export default {
   props: {
     error: Error,
     title: String
+  },
+  computed: {
+    status() {
+      if (_.has(this.error, 'response.status')) {
+        return this.error.response.status;
+      }
+      return 0;
+    },
+    statusText() {
+      if (_.has(this.error, 'response.statusText'))  {
+        return this.error.response.statusText;
+      }
+      return "Unknown error";
+    },
+    description() {
+      if(this.status == 0) {
+        return this.statusText;
+      }
+      return `${this.status}: ${this.statusText}`
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 pre {
-  display: inline-block;
+  display: inline-block; 
+  white-space: pre-wrap;
 }
 
 i {

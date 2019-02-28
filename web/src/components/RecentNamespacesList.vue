@@ -5,7 +5,7 @@
       v-bind:href="'#/namespaces/'+ns+'/pods'"
       :variant="variant"> 
       <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-1">{{ ns }}</h5>
+        <span class="mb-1">{{ ns }}</span>
       </div>
     </b-list-group-item>
   </b-list-group>
