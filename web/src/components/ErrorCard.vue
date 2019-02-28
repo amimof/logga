@@ -10,6 +10,7 @@
 
 <script>
 
+import _ from 'lodash'
 export default {
   name: 'ErrorCard',
   props: {

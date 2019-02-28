@@ -16,9 +16,6 @@
 
 <script>
 import Breadcrumb from './Breadcrumb.vue'
-
-let body;
-
 export default {
   name: 'Nav',
   components: {

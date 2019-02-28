@@ -8,7 +8,7 @@
       <div class="d-flex justify-content-between align-items-center">
         <span class="mb-1">{{ item.metadata.name }}</span>
         <small></small>
-        <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+        <small><span><i class="far fa-clock"></i> {{ item.metadata.creationTimestamp | moment("from", "now", true) }} <i class="fas fa-long-arrow-alt-up text-success"></i> {{ item.spec.containers.length }} <i class="fas fa-redo-alt text-danger"></i> {{ item | numContainerRestarts }}</span></small>
       </div>
     </b-list-group-item>
   </b-list-group>
@@ -60,6 +60,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.created {
+  opacity: 0.5;
+}
 </style>
 
 

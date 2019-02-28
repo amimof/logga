@@ -18,7 +18,7 @@
 
     <Loader v-if="isLoading" />
 
-    <p><h5 v-if="items.length == 0 && !isLoading && !isError">No pods found</h5></p>
+    <h5 v-if="items.length == 0 && !isLoading && !isError">No pods found</h5>
 
     <PodsList :items="items" :active="activePod" />
     
