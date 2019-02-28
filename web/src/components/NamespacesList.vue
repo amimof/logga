@@ -7,7 +7,7 @@
       :active="active == index">
       <div class="d-flex justify-content-between align-items-center">
         <span class="mb-1">{{ item.metadata.name }}</span>
-        <small><span>{{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+        <small><span><i class="far fa-clock"></i> {{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
       </div>
     </b-list-group-item>
   </b-list-group>

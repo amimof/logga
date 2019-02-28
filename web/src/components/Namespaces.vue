@@ -17,7 +17,7 @@
 
     <Loader v-if="isLoading" />
 
-    <p><h5 v-if="items.length == 0 && !isLoading && !isError">No namespaces found</h5></p>
+    <h5 v-if="items.length == 0 && !isLoading && !isError">No namespaces found</h5>
 
     <div class="row" v-if="!isLoading && !isError">
       <div class="col" v-if="items.length > 0">
@@ -81,10 +81,10 @@ export default {
     handlePress() {
 
       // Up down
-    	if (event.keyCode == keyup && this.activeNamespace > 0) {
-      	this.activeNamespace--
+      if (event.keyCode == keyup && this.activeNamespace > 0) {
+        this.activeNamespace--
       } else if (event.keyCode == keydown && this.activeNamespace < (this.items.length-1)) {
-      	this.activeNamespace++
+        this.activeNamespace++
       } else if (keychars.indexOf(event.keyCode) > -1) {
         this.activeNamespace = 0;
         this.$el.querySelector('input').focus();
