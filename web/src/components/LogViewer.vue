@@ -59,6 +59,9 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
+const keyf = 70;
+const keyb = 66;
+const keyt = 84;
 export default {
   name: 'LogViewer',
   components: {
@@ -77,7 +80,8 @@ export default {
     }
   },
   mounted() {
-    this.getLogs()
+    window.addEventListener("keydown", this.handlePress);
+    this.getLogs();
   },
   updated() {
     this.gotoBottom();
@@ -152,6 +156,19 @@ export default {
       if(this.isWatching) {
         this.closeStream();
         this.watch();
+      }
+    },
+    handlePress() {
+      switch(event.keyCode) {
+        case keyf:
+          this.toggleWatch();
+          break;
+        case keyt:
+          this.gotoTop();
+          break;
+        case keyb:
+          this.gotoBottom();
+          break;
       }
     }
   },
