@@ -7,7 +7,7 @@
       :active="active == index">
       <div class="d-flex justify-content-between align-items-center">
         <span class="mb-1">{{ item.metadata.name }}</span>
-        <small><span><i class="far fa-clock"></i> {{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span></small>
+        <small><span class="namespace-icons"><i class="far fa-clock"></i> {{ item.metadata.creationTimestamp | moment("from", "now", true) }}</span> <span class="namespace-icons"><PodCount :namespace="item.metadata.name"/></span></small>
       </div>
     </b-list-group-item>
   </b-list-group>
@@ -15,8 +15,12 @@
 </template>
 
 <script>
+import PodCount from './PodCount.vue'
 export default {
   name: 'NamespacesList',
+  components: {
+    PodCount
+  },
   props: {
     items: {
       type: Array,
@@ -36,6 +40,10 @@ export default {
 </script>
 
 <style lang="scss">
+.namespace-icons {
+  padding-left: 8px;
+  padding-right: 8px;
+}
 </style>
 
 
