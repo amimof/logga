@@ -59,9 +59,10 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
-const keyf = 70;
+const keyw = 87;
 const keyb = 66;
 const keyt = 84;
+const keyl = 76;
 export default {
   name: 'LogViewer',
   components: {
@@ -160,7 +161,7 @@ export default {
     },
     handlePress() {
       switch(event.keyCode) {
-        case keyf:
+        case keyw:
           this.toggleWatch();
           break;
         case keyt:
@@ -168,6 +169,9 @@ export default {
           break;
         case keyb:
           this.gotoBottom();
+          break;
+        case keyl:
+          this.toggleLargeText();
           break;
       }
     }
