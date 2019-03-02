@@ -97,6 +97,12 @@ export default new Vuex.Store({
     }
   },
   getters: {
+    get: () => (url) => {
+      return axios.get(url)
+    },
+    getAPIURL: () => {
+      return apiUrl;
+    },
     sortList: () => (list, sort) => {
       return _.orderBy(list, function(item) {
         return item.metadata.name

@@ -59,7 +59,6 @@
 <script>
 import { mapState } from 'vuex'
 import Loader from './Loader.vue'
-
 export default {
   name: 'LogViewer',
   components: {
@@ -79,10 +78,25 @@ export default {
   },
   mounted() {
     this.getLogs()
-    this.selectedContainer = 0;
   },
   updated() {
     this.gotoBottom();
+  },
+  created() {
+    if(this.$route.query.container) {
+      for(let i = 0; this.pod.spec.containers.length > i; i++) {
+        if(this.pod.spec.containers[i].name.toLowerCase() == this.$route.query.container.toLowerCase()) {
+          this.selectedContainer = i;
+          break;
+        } 
+      }
+    }
+    if(this.$route.query.watch && this.$route.query.watch.toLowerCase() == 'true') {
+      this.toggleWatch();
+    }
+    if(this.$route.query.largetext && this.$route.query.largetext.toLowerCase() == "true") {
+      this.toggleLargeText(); 
+    }
   },
   methods: {
     reload() {
@@ -106,6 +120,7 @@ export default {
     watch() {
       this.$store.dispatch('streamPodLog', { namespace: this.$route.params.namespace, pod: this.$route.params.pod, container: this.pod.spec.containers[this.selectedContainer].name });
       this.isWatching = true;
+      this.$router.push({ query: Object.assign({}, this.$route.query, { watch: "true" })});
       this.gotoBottom();
     },
     toggleWatch() {
@@ -118,6 +133,7 @@ export default {
     closeStream() {
       this.$store.dispatch('closeStream')
       this.isWatching = false;
+      this.$router.push({ query: Object.assign({}, this.$route.query, { watch: "false" })});
     },
     gotoBottom () {
       window.scrollTo(0, document.body.scrollHeight);
@@ -127,16 +143,17 @@ export default {
     },
     toggleLargeText() {
       this.isLargeText = !this.isLargeText;
+      this.$router.push({ query: Object.assign({}, this.$route.query, { largetext: this.isLargeText })});
     },
     setSelectedContainer(index) {
       this.selectedContainer = index;
+      this.$router.push({ query: Object.assign({}, this.$route.query, { container: this.pod.spec.containers[this.selectedContainer].name })});
       this.getLogs();
       if(this.isWatching) {
         this.closeStream();
         this.watch();
       }
     }
-
   },
   computed: {
     ...mapState([
