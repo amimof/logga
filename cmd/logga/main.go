@@ -2,13 +2,18 @@ package main
 
 import (
 	"fmt"
+	"github.com/amimof/logga/pkg/api"
+	"github.com/amimof/logga/pkg/server"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/pflag"
-	"github.com/amimof/logga/pkg/api"
-	"github.com/amimof/logga/pkg/server"
+	"io/ioutil"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -20,15 +25,18 @@ var (
 
 	host string
 	port int
+
+	kubeconfigPath string
 )
 
 func init() {
 	pflag.StringVar(&host, "host", "localhost", "The host address on which to listen for the --port port")
+	pflag.StringVar(&kubeconfigPath, "kubeconfig", fmt.Sprintf("%s%s", os.Getenv("HOME"), "/.kube/config"), "Absolute path to a kubeconfig file")
 	pflag.IntVar(&port, "port", 8080, "the port to listen on for insecure connections, defaults to 8080")
+	klog.SetOutput(ioutil.Discard) // Tell klog, which is used by client-go to log into /dev/null instead of file
 }
 
 func main() {
-
 	showver := pflag.Bool("version", false, "Print version")
 
 	// parse the CLI flags
@@ -40,7 +48,25 @@ func main() {
 		return
 	}
 
-	a, err := api.NewAPI()
+	// Check if kubeconfig exists. Set to "" if not so that we can use in-cluster config instead
+	if _, err := os.Stat(kubeconfigPath); os.IsNotExist(err) {
+		log.Printf("kubeconfig '%s' not found. Falling back to in-cluster config", kubeconfigPath)
+		kubeconfigPath = ""
+	}
+
+	// Create config from environment
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Creates the clientset
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a, err := api.NewAPI(client)
 	if err != nil {
 		log.Fatal(err)
 	}

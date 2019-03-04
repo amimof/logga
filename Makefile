@@ -9,7 +9,7 @@ COMMIT=$(shell git rev-parse HEAD)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 GOVERSION=$(shell go version | awk -F\go '{print $$3}' | awk '{print $$1}')
 GITHUB_USERNAME=amimof
-BUILD_DIR=${GOPATH}/src/gitlab.com/${GITHUB_USERNAME}/${BINARY}
+BUILD_DIR=${GOPATH}/src/github.com/${GITHUB_USERNAME}/${BINARY}
 PKG_LIST=$$(go list ./... | grep -v /vendor/)
 # Setup the -ldflags option for go build here, interpolate the variable values
 LDFLAGS = -ldflags "-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -X main.GOVERSION=${GOVERSION}"
@@ -45,25 +45,25 @@ windows: dep
 build: linux darwin rpi windows
 
 docker_fmt:
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make fmt
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make fmt
 
 docker_test:
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make test
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make test
 
 docker_compile:
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga golang:${GOVERSION} make linux
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make linux
 
 docker_npm_build:
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga/web node:8 npm install
-	docker run --rm -v "${PWD}":/go/src/gitlab.com/amimof/logga -w /go/src/gitlab.com/amimof/logga/web node:8 npm run build
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:8 npm install
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:8 npm run build
 
 docker_image_build:
-	docker build -t registry.gitlab.com/amimof/logga:${VERSION} .
-	docker tag registry.gitlab.com/amimof/logga:${VERSION} registry.gitlab.com/amimof/logga:latest
+	docker build -t amimof/logga:${VERSION} .
+	docker tag amimof/logga:${VERSION} amimof/logga:latest
 
 docker_image_push:
-	docker push registry.gitlab.com/amimof/logga:${VERSION}
-	docker push registry.gitlab.com/amimof/logga:latest
+	docker push amimof/logga:${VERSION}
+	docker push amimof/logga:latest
 
 docker_build: docker_compile docker_npm_build docker_image_build docker_image_push
 
