@@ -27,14 +27,14 @@
             </div>
 
             <b-button-group>
-              <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload"><i class="fas fa-redo"></i></b-button>
-              <b-button variant="outline-primary" v-b-tooltip.hover title="Download log to file"><i class="fas fa-download"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="reload()" :disabled="isReloading" v-b-tooltip.hover title="Reload (R)"><i class="fas fa-redo"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="download(pod.metadata.name+'.log', podLog)" v-b-tooltip.hover title="Download log (D)"><i class="fas fa-download"></i></b-button>
             </b-button-group>
             <b-button-group>
-              <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size"><i class="fas fa-text-height"></i></b-button>
-              <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top"><i class="fas fa-arrow-up"></i></b-button>
-              <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom"><i class="fas fa-arrow-down"></i></b-button> 
-              <b-button variant="outline-primary" v-on:click="toggleWatch()" :pressed="isWatching" v-b-tooltip.hover title="Tail log"><i class="fas fa-eye"></i></b-button> 
+              <b-button variant="outline-primary" v-on:click="toggleLargeText()" :pressed="isLargeText" v-b-tooltip.hover title="Increased text size (L)"><i class="fas fa-text-height"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="gotoTop()" v-b-tooltip.hover title="Go to top (T)"><i class="fas fa-arrow-up"></i></b-button>
+              <b-button variant="outline-primary" v-on:click="gotoBottom()" v-b-tooltip.hover title="Go to bottom (B)"><i class="fas fa-arrow-down"></i></b-button> 
+              <b-button variant="outline-primary" v-on:click="toggleWatch()" :pressed="isWatching" v-b-tooltip.hover title="Watch log (W)"><i class="fas fa-eye"></i></b-button> 
             </b-button-group>
           </div>
         </nav>
@@ -63,6 +63,8 @@ const keyw = 87;
 const keyb = 66;
 const keyt = 84;
 const keyl = 76;
+const keyr = 82;
+const keyd = 68;
 export default {
   name: 'LogViewer',
   components: {
@@ -173,7 +175,21 @@ export default {
         case keyl:
           this.toggleLargeText();
           break;
+        case keyr:
+          this.reload();
+          break;
+        case keyd:
+          this.download(`${this.pod.metadata.name}.log`, this.podLog);
+          break;
       }
+    },
+    download(filename, data) {
+      const content = btoa(data.join('\r\n'));
+      const link = document.createElement('a');
+      link.setAttribute('download', filename); //or any other extension
+      link.setAttribute("href", "data:text/plain;base64;charset=utf-8,"+content); //or any other extension
+      document.body.appendChild(link);
+      link.click();
     }
   },
   computed: {
