@@ -1,0 +1,86 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:   
+  name: logga
+rules:
+- apiGroups:
+  - ""        
+  resources:   
+  - namespaces
+  - pods
+  - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: logga
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: logga
+subjects:
+- kind: ServiceAccount
+  name: logga
+  namespace: logging
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: logga
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: logga
+  name: logga
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: logga
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: logga
+  name: logga
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logga
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: logga
+    spec:
+      containers:
+      - args:
+        - --host=0.0.0.0
+        image: amimof/logga:latest
+        imagePullPolicy: Always
+        name: logga
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+      serviceAccount: logga
+      serviceAccountName: logga
+  

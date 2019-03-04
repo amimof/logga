@@ -1,17 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"io"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"fmt"
-	//corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/client-go/rest"
 	"bytes"
 	"context"
 	"github.com/gorilla/mux"
-	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	"net/http"
 	"strconv"
@@ -23,92 +19,17 @@ type API struct {
 	broker *Broker
 }
 
-type Broker struct {
-	// Events are pushed to this channel by the main events-gathering routine
-	Notifier chan []byte
-
-	// New client connections
-	newClients chan chan []byte
-
-	// Closed client connections
-	closingClients chan chan []byte
-
-	// Client connections registry
-	clients map[chan []byte]bool
-}
-
-func NewAPI() (*API, error) {
-
-	c, err := makeClient()
-	if err != nil {
-		return nil, err
-	}
+func NewAPI(c *kubernetes.Clientset) (*API, error) {
 	return &API{
-		client: c,	
+		client: c,
 		broker: NewBroker(),
 	}, nil
-	
-}
-
-func NewBroker() *Broker {
-	broker := &Broker{
-		Notifier:       make(chan []byte, 1),
-		newClients:     make(chan chan []byte),
-		closingClients: make(chan chan []byte),
-		clients:        make(map[chan []byte]bool),
-	}
-	go broker.listen()
-	return broker
-}
-
-func makeClient() (*kubernetes.Clientset, error) {
-	c, err := clientcmd.BuildConfigFromFlags("", "/Users/amir/.kube/config")
-	if err != nil {
-		return nil, err
-	}
-	cs, err := kubernetes.NewForConfig(c)
-	if err != nil {
-		return nil, err
-	}
-	return cs, nil
-}
-
-func (broker *Broker) listen() {
-	patience := time.Second*1
-	for {
-		select {
-		case s := <-broker.newClients:
-
-			// A new client has connected.
-			// Register their message channel
-			broker.clients[s] = true
-			log.Printf("Client added. %d registered clients", len(broker.clients))
-		case s := <-broker.closingClients:
-
-			// A client has dettached and we want to
-			// stop sending them messages.
-			delete(broker.clients, s)
-			log.Printf("Removed client. %d registered clients", len(broker.clients))
-		case event := <-broker.Notifier:
-
-			// We got a new event from the outside!
-			// Send event to all connected clients
-			for clientMessageChan, _ := range broker.clients {
-				select {
-				case clientMessageChan <- event:
-				case <-time.After(patience):
-					//log.Print("Skipping client.")
-					continue
-				}
-			}
-		}
-	}
 
 }
 
 // GetPods will return PodList in a namespace
 func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
-	
+
 	var statusCode int
 	vars := mux.Vars(r)
 
@@ -143,7 +64,7 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 // GetPods will return a Pod in a namespace
 func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
-	
+
 	var statusCode int
 	vars := mux.Vars(r)
 
@@ -211,7 +132,7 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 
 // GetNamespace returns a Namespace in a cluster
 func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
-	
+
 	var statusCode int
 	vars := mux.Vars(r)
 
@@ -320,7 +241,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 
 	// Signal the broker that we have a new connection
 	a.broker.newClients <- messageChan
-	
+
 	// Remove this client from the map of connected clients
 	// when this handler exits.
 	defer func() {
@@ -366,7 +287,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	canaryLog := []byte("unexpected stream type \"\"")
 
 	for {
-		if(ctx.Err() != nil) {
+		if ctx.Err() != nil {
 			//log.Printf("Erro: %s", ctx.Err())
 			return
 		}
@@ -390,7 +311,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 				return
 			default:
 				l := buf[0:nread]
-	
+
 				if bytes.Compare(canaryLog, l) == 0 {
 					log.Printf("received 'unexpect stream type'")
 					continue
@@ -399,7 +320,7 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "data: %s\n\n", <-messageChan)
 				flusher.Flush()
 			}
-	
+
 		}
 
 	}
