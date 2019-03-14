@@ -13,6 +13,7 @@ import { mapState } from 'vuex'
 import LogViewer from './LogViewer.vue'
 import ErrorCard from './ErrorCard.vue'
 import Loader from './Loader.vue'
+const keyesc = 27;
 export default {
   name: 'Pod',
   components: {
@@ -27,6 +28,9 @@ export default {
       error: null
     }
   }, 
+  mounted() {  
+    window.addEventListener("keydown", this.handlePress);
+  },
   created() {
     this.$store.dispatch('getPod', { namespace: this.$route.params.namespace, pod: this.$route.params.pod }).then(() => {
       this.isLoading = false
@@ -38,14 +42,24 @@ export default {
     })
     this.$store.dispatch('addRecentNamespace', this.$route.params.namespace)
   },
+  beforeRouteLeave (to, from, next) {
+    this.$store.dispatch('closeStream');
+    next()
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handlePress);
+  },
+  methods: {
+    handlePress() {
+      if (event.keyCode == keyesc) {
+        this.$router.push({ path: `/namespaces/${this.$route.params.namespace}/pods` })
+      }
+    }
+  },
   computed: {
     ...mapState([
       'pod'
     ]),
-  },
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('closeStream');
-    next()
   }
 }
 </script>

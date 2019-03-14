@@ -86,6 +86,9 @@ export default {
     window.addEventListener("keydown", this.handlePress);
     this.getLogs();
   },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handlePress);
+  },
   updated() {
     this.gotoBottom();
   },

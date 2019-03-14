@@ -34,6 +34,7 @@ import Loader from './Loader.vue'
 import ErrorCard from './ErrorCard.vue'
 import PodsList from './PodsList.vue'
 
+const keyesc = 27;
 const keyup = 38;
 const keydown = 40;
 const keyenter = 13;
@@ -90,8 +91,13 @@ export default {
         this.$router.push({ path: `/namespaces/${n}/pods/${p}` })
       }
 
+      // Go back to namespaces on esc
+      if (event.keyCode == keyesc && this.str == "") {
+        this.$router.push({ path: `/namespaces` })
+      }
+
       // Blur and clear input
-      if (event.keyCode == 27) {
+      if (event.keyCode == keyesc) {
         this.$el.querySelector('input').blur();
         this.str = "";
       }
