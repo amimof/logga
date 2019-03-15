@@ -30,7 +30,7 @@ var (
 )
 
 func init() {
-	pflag.StringVar(&host, "host", "localhost", "The host address on which to listen for the --port port")
+	pflag.StringVar(&host, "host", "0.0.0.0", "The host address on which to listen for the --port port")
 	pflag.StringVar(&kubeconfigPath, "kubeconfig", fmt.Sprintf("%s%s", os.Getenv("HOME"), "/.kube/config"), "Absolute path to a kubeconfig file")
 	pflag.IntVar(&port, "port", 8080, "the port to listen on for insecure connections, defaults to 8080")
 	klog.SetOutput(ioutil.Discard) // Tell klog, which is used by client-go to log into /dev/null instead of file
