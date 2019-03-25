@@ -17,6 +17,9 @@ LDFLAGS = -ldflags "-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.
 # Build the project
 all: build
 
+dep:
+	go get -v -d ./cmd/logga/... ;
+
 test:
 	cd ${BUILD_DIR}; \
 	go test ${PKG_LIST} ; \
@@ -24,11 +27,33 @@ test:
 
 fmt:
 	cd ${BUILD_DIR}; \
-	go fmt ${PKG_LIST} ; \
-	cd - >/dev/null
+	gofmt -s -d -e -w .; \
 
-dep:
-	go get -v -d ./cmd/logga/... ;
+vet:
+	cd ${BUILD_DIR}; \
+	go vet ${PKG_LIST}; \
+
+gocyclo:
+	go get -u github.com/fzipp/gocyclo; \
+	cd ${BUILD_DIR}; \
+	${GOPATH}/bin/gocyclo .; \
+
+golint:
+	go get -u golang.org/x/lint/golint; \
+	cd ${BUILD_DIR}; \
+	${GOPATH}/bin/golint ${PKG_LIST}; \
+
+ineffassign:
+	go get github.com/gordonklaus/ineffassign; \
+	cd ${BUILD_DIR}; \
+	${GOPATH}/bin/ineffassign .; \
+
+misspell:
+	go get -u github.com/client9/misspell/cmd/misspell; \
+	cd ${BUILD_DIR}; \
+	find . -type f -not -path "./vendor/*" -not -path "./.git/*"  -not -path "./web/node_modules/*" -not -path "./web/dist/*" -print0 | xargs -0 ${GOPATH}/bin/misspell; \
+
+ci: fmt vet gocyclo golint ineffassign misspell 
 
 linux: dep
 	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-linux-${GOARCH} cmd/logga/main.go

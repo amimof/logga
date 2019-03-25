@@ -1,24 +1,26 @@
 package api
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"bytes"
-	"context"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
 
+// API exposes client and broker and various methods to interact with backend api-servers
 type API struct {
 	client *kubernetes.Clientset
 	broker *Broker
 }
 
+// NewAPI returns an initialized API instance
 func NewAPI(c *kubernetes.Clientset) (*API, error) {
 	return &API{
 		client: c,
@@ -62,7 +64,7 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetPods will return a Pod in a namespace
+// GetPod will return a Pod in a namespace
 func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 	var statusCode int
@@ -98,7 +100,7 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Namespaces returns NamespaceList in a cluster
+// GetNamespaces returns NamespaceList in a cluster
 func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 
 	var statusCode int
@@ -259,6 +261,8 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	since := sinceSeconds(r.URL.Query().Get("sinceSeconds"))
 
+	defer cancel()
+
 	opts := &v1.PodLogOptions{
 		Container:    container,
 		Follow:       true,
@@ -274,7 +278,6 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	stream, err := req.Stream()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		cancel()
 		return
 	}
 
@@ -288,7 +291,6 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		if ctx.Err() != nil {
-			//log.Printf("Erro: %s", ctx.Err())
 			return
 		}
 		select {
@@ -301,13 +303,10 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 
 			switch {
 			case err == io.EOF:
-				//log.Printf("%s", err.Error())
 				return
 			case err != nil:
-				//log.Printf("nil error %s", err.Error())
 				return
 			case nread == 0:
-				//log.Printf("%s", io.EOF)
 				return
 			default:
 				l := buf[0:nread]

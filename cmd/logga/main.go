@@ -17,12 +17,19 @@ import (
 	"time"
 )
 
-var (
-	VERSION   string
-	COMMIT    string
-	BRANCH    string
-	GOVERSION string
+// VERSION is generated during compile as is never to be set here
+var VERSION string
 
+// COMMIT is generated during compile as is never to be set here
+var COMMIT string
+
+// BRANCH is generated during compile as is never to be set here
+var BRANCH string
+
+// GOVERSION is generated during compile as is never to be set here
+var GOVERSION string
+
+var (
 	host string
 	port int
 

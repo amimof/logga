@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Broker type implements some functions in order for clients to make use of SSE (Server Sent Events)
 type Broker struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Notifier chan []byte
@@ -19,6 +20,7 @@ type Broker struct {
 	clients map[chan []byte]bool
 }
 
+// NewBroker returns an initialized Broker instance
 func NewBroker() *Broker {
 	broker := &Broker{
 		Notifier:       make(chan []byte, 1),
@@ -50,7 +52,7 @@ func (broker *Broker) listen() {
 
 			// We got a new event from the outside!
 			// Send event to all connected clients
-			for clientMessageChan, _ := range broker.clients {
+			for clientMessageChan := range broker.clients {
 				select {
 				case clientMessageChan <- event:
 				case <-time.After(patience):
