@@ -7,7 +7,7 @@ import _ from 'lodash'
 Vue.use(Vuex)
 Vue.use(VueAxios, axios)
 
-let apiUrl =  process.env.NODE_ENV === 'dev' ? `http://${process.env.VUE_APP_API_HOST}:${process.env.VUE_APP_API_PORT}/api` : '/api'
+let apiUrl =  `${process.env.VUE_APP_API_URL}/api`
 let eventSource;
 
 export default new Vuex.Store({
