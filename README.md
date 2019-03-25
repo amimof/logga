@@ -3,28 +3,37 @@
 
 ----
 
-logga is an easy to use and powerful container log dashboard for [Kubernetes](https://kubernetes.io). It's used by application teams, developers and sysadmins to effortlessly view container logs in a namespace using a web browser, without a complex logging infrastructure. Logga is ment to be deployed in Kubernetes per namespace by developers and uses in-cluster RBAC authorisation. Some of the key futures are:
+With `logga` you view [Kubernetes](https://kubernetes.io) container logs using a web browser. Sounds simple right? That's the point. It's easy to use and designed to run on [Kubernetes](https://kubernetes.io). It's used by application teams, developers and sysadmins to effortlessly view container logs using a web browser, without a complex logging infrastructure. 
+
+## Key features
 
 * Super easy do deploy and manage
 * Fully stateless 
 * In-cluster as well as out-of-cluster support
-
+* Never leave the keyboard with quick commands
+* Quick search
+* Tail/Watch logs
 
 ![](./img/logga_screenshot.png)
 
 ## Getting started
 
 ### In-cluster (recommended)
-This is the prefered method of deploying and running. Logga is ment to be run on Kubernetes, in multiple namespaces. It's designed so that each application team or developer has one or more instances of logga.
+This is the prefered method of deploying and running. Logga is built to run on Kubernetes.
 
 ```
-kubectl apply -f <url to manifest>
+kubectl apply -f https://raw.githubusercontent.com/amimof/logga/master/deploy/kubernetes.yml
 ```
 
 ### Out-of-cluster
-
+It is possible to run logga out-of-cluster using docker. Logga is able to use credentials to establish a connection to a cluster using a kubernetes [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/).
 ```
-docker run -d --name logga -p 8080:8080 amimof/logga:latest
+docker run \
+  -d \
+  --name logga \
+  -v $PWD/.kube/config:/config \
+  -p 8080:8080 amimof/logga:latest \
+  --kubeconfig=/config
 ```
 
 ## Contributing
