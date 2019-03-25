@@ -1,5 +1,5 @@
 # logga
-[![Build Status](https://travis-ci.com/amimof/logga.svg?token=YU8cQELmfms9zTY3ztML&branch=master)](https://travis-ci.com/amimof/logga) [![logga](https://godoc.org/github.com/amimof/logga?status.svg)](https://godoc.org/github.com/amimof/logga) [![Go Report Card](https://goreportcard.com/badge/github.com/amimof/logga)](https://goreportcard.com/report/github.com/amimof/logga) [![Coverage](http://gocover.io/_badge/github.com/amimof/logga)](http://gocover.io/github.com/amimof/logga)
+[![Build Status](https://travis-ci.org/amimof/logga.svg?branch=master)](https://travis-ci.org/amimof/logga) [![logga](https://godoc.org/github.com/amimof/logga?status.svg)](https://godoc.org/github.com/amimof/logga) [![Go Report Card](https://goreportcard.com/badge/github.com/amimof/logga)](https://goreportcard.com/report/github.com/amimof/logga) [![Coverage](http://gocover.io/_badge/github.com/amimof/logga)](http://gocover.io/github.com/amimof/logga)
 
 ----
 
