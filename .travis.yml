@@ -1,0 +1,17 @@
+sudo: false
+dist: stretch
+language: go
+go:
+  - "1.10"
+  - "1.11"
+before_install:
+  - make dep
+script:
+  - make fmt
+  - make vet 
+  - make gocyclo
+  - make golint 
+  - make ineffassign
+  - make misspell
+  - make test
+  - make linux

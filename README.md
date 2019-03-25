@@ -19,7 +19,7 @@ With `logga` you view [Kubernetes](https://kubernetes.io) container logs using a
 ## Getting started
 
 ### In-cluster (recommended)
-This is the prefered method of deploying and running. Logga is built to run on Kubernetes.
+This is the preferred method of deploying and running. Logga is built to run on Kubernetes.
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/amimof/logga/master/deploy/kubernetes.yml
