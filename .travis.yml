@@ -2,16 +2,33 @@ sudo: false
 dist: stretch
 language: go
 go:
-  - "1.10"
-  - "1.11"
+- "1.10"
+- "1.11"
+stages:
+- test
+- build
+- deploy
 before_install:
-  - make dep
-script:
-  - make fmt
-  - make vet 
-  - make gocyclo
-  - make golint 
-  - make ineffassign
-  - make misspell
-  - make test
-  - make linux
+- make dep
+jobs:
+  include:
+  - stage: test
+    script: 
+    - make fmt
+    - make vet 
+    - make gocyclo
+    - make golint 
+    - make ineffassign
+    - make misspell
+    - make test
+  - stage: build
+    script:
+    - make linux
+  - stage: deploy
+    deploy:
+      provider: releases
+      api_key: ${GITHUB_API_KEY}
+      file: out/logga-linux-amd64
+      skip_cleanup: true
+      on:
+        tags: true
