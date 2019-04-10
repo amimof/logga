@@ -2,16 +2,43 @@ sudo: false
 dist: stretch
 language: go
 go:
-  - "1.10"
-  - "1.11"
+- "1.11"
+stages:
+- test
+- build
+- deploy
 before_install:
-  - make dep
-script:
-  - make fmt
-  - make vet 
-  - make gocyclo
-  - make golint 
-  - make ineffassign
-  - make misspell
-  - make test
-  - make linux
+- make dep
+jobs:
+  include:
+  - stage: test
+    script: 
+    - make fmt
+    - make vet 
+    - make gocyclo
+    - make golint 
+    - make ineffassign
+    - make misspell
+    - make test
+  - stage: build
+    name: linux
+    script: make linux
+  - name: osx
+    os: osx
+    script: make darwin
+  - name: arm
+    script: make rpi
+  - stage: deploy
+    script: make linux darwin rpi windows
+    deploy:
+      provider: releases
+      api_key: ${GITHUB_API_KEY}
+      file: 
+      - out/logga-linux-amd64
+      - out/logga-darwin-amd64
+      - out/logga-linux-arm
+      - out/logga-windows-amd64.exe
+      skip_cleanup: true
+      draft: true
+      on:
+        tags: true
