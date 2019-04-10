@@ -11,29 +11,30 @@ before_install:
 - make dep
 jobs:
   include:
-  - stage: test
-    script: 
-    - make fmt
-    - make vet 
-    - make gocyclo
-    - make golint 
-    - make ineffassign
-    - make misspell
-    - make test
-  - stage: build
-    name: linux
-    script: make linux
-  - name: osx
-    os: osx
-    script: make darwin
-  - name: arm
-    script: make rpi
+  # - stage: test
+  #   script: 
+  #   - make fmt
+  #   - make vet 
+  #   - make gocyclo
+  #   - make golint 
+  #   - make ineffassign
+  #   - make misspell
+  #   - make test
+  # - stage: build
+  #   name: linux
+  #   script: make linux
+  # - name: osx
+  #   os: osx
+  #   script: make darwin
+  # - name: arm
+  #   script: make rpi
   - stage: deploy
+    script: make linux
     deploy:
       provider: releases
       api_key: ${GITHUB_API_KEY}
       file: out/logga-linux-amd64
       skip_cleanup: true
-      script: skip
+      draft: true
       on:
         tags: true
