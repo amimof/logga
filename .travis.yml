@@ -21,8 +21,13 @@ jobs:
     - make misspell
     - make test
   - stage: build
-    script:
-    - make linux
+    name: linux
+    script: make linux
+  - name: osx
+    os: osx
+    script: make darwin
+  - name: arm
+    script: make rpi
   - stage: deploy
     deploy:
       provider: releases
