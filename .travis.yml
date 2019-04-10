@@ -36,5 +36,3 @@ jobs:
       file: out/logga-linux-amd64
       skip_cleanup: true
       draft: true
-      on:
-        tags: true
