@@ -2,7 +2,6 @@ sudo: false
 dist: stretch
 language: go
 go:
-- "1.10"
 - "1.11"
 stages:
 - test
@@ -30,5 +29,6 @@ jobs:
       api_key: ${GITHUB_API_KEY}
       file: out/logga-linux-amd64
       skip_cleanup: true
+      script: skip
       on:
         tags: true
