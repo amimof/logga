@@ -26,13 +26,8 @@ jobs:
   - name: Vue
     script: make docker_npm_test
   - stage: build
-    name: "Go: linux"
-    script: make linux
-  - name: "Go: osx"
-    os: osx
-    script: make darwin
-  - name: "Go: arm"
-    script: make rpi
+    name: "Go"
+    script: make linux darwin rpi windows
   - name: "Vue"
     script: make docker_npm_build
   - stage: deploy
