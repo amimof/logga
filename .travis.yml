@@ -48,8 +48,7 @@ jobs:
   - name: "Docker Hub"
     provider: script
     script:
-    - make docker_compile
     - "echo $DOCKER_PASSWORD | docker login -u amimof --password-stdin"
-    - docker push 
+    - make docker_compile
     on:
       branch: master
