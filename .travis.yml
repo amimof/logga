@@ -49,6 +49,6 @@ jobs:
     provider: script
     script:
     - "echo $DOCKER_PASSWORD | docker login -u amimof --password-stdin"
-    - make docker_compile
+    - make docker_build
     on:
       branch: master
