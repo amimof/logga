@@ -78,6 +78,9 @@ docker_test:
 docker_compile:
 	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make linux
 
+docker_npm_test:
+	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:8 npm run test:unit
+
 docker_npm_build:
 	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:8 npm install
 	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:8 npm run build

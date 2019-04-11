@@ -1,6 +1,8 @@
 sudo: false
 dist: stretch
 language: go
+services:
+- docker
 go:
 - "1.11"
 stages:
@@ -20,6 +22,7 @@ jobs:
     - make ineffassign
     - make misspell
     - make test
+    - make docker_npm_test
   - stage: build
     name: linux
     script: make linux
