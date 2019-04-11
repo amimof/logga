@@ -14,6 +14,7 @@ before_install:
 jobs:
   include:
   - stage: test
+    name: Go
     script: 
     - make fmt
     - make vet 
@@ -22,17 +23,21 @@ jobs:
     - make ineffassign
     - make misspell
     - make test
-    - make docker_npm_test
+  - name: Vue
+    script: make docker_npm_test
   - stage: build
-    name: linux
+    name: "Go: linux"
     script: make linux
-  - name: osx
+  - name: "Go: osx"
     os: osx
     script: make darwin
-  - name: arm
+  - name: "Go: arm"
     script: make rpi
+  - name: "Vue"
+    script: make docker_npm_build
   - stage: deploy
     script: make linux darwin rpi windows
+    name: "GitHub releases"
     deploy:
       provider: releases
       api_key: ${GITHUB_API_KEY}
@@ -45,3 +50,11 @@ jobs:
       draft: true
       on:
         tags: true
+  - name: "Docker Hub"
+    provider: script
+    script:
+    - make docker_compile
+    - "echo $DOCKER_PASSWORD | docker login -u amimof --password-stdin"
+    - docker push 
+    on:
+      branch: master
