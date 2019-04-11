@@ -14,8 +14,14 @@ import _ from 'lodash'
 export default {
   name: 'ErrorCard',
   props: {
-    error: Error,
-    title: String
+    error: {
+      type: Error,
+      required: true
+    },
+    title: {
+      type: String,
+      required: true
+    }
   },
   computed: {
     status() {
