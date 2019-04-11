@@ -65,6 +65,7 @@ const keyt = 84;
 const keyl = 76;
 const keyr = 82;
 const keyd = 68;
+const keytab = 9;
 export default {
   name: 'LogViewer',
   components: {
@@ -164,14 +165,26 @@ export default {
         this.watch();
       }
     },
-    handlePress() {
+    setNextContainer() {
+      if(this.pod.spec.containers.length > 1) {
+        if(this.selectedContainer < (this.pod.spec.containers.length-1)) {
+          this.setSelectedContainer(this.selectedContainer+1);
+          return
+        }
+        if(this.selectedContainer == (this.pod.spec.containers.length-1)) {
+          this.setSelectedContainer(0);
+          return
+        }
+      }
+    },
+    handlePress(event) {
       switch(event.keyCode) {
         case keyw:
           this.toggleWatch();
           break;
         case keyt:
           this.gotoTop();
-          break;
+          break;  
         case keyb:
           this.gotoBottom();
           break;
@@ -183,6 +196,10 @@ export default {
           break;
         case keyd:
           this.download(`${this.pod.metadata.name}.log`, this.podLog);
+          break;
+        case keytab: 
+          this.setNextContainer();
+          event.preventDefault();
           break;
       }
     },
