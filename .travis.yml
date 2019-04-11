@@ -1,6 +1,8 @@
 sudo: false
 dist: stretch
 language: go
+services:
+- docker
 go:
 - "1.11"
 stages:
@@ -12,6 +14,7 @@ before_install:
 jobs:
   include:
   - stage: test
+    name: Go
     script: 
     - make fmt
     - make vet 
@@ -20,16 +23,16 @@ jobs:
     - make ineffassign
     - make misspell
     - make test
+  - name: Vue
+    script: make docker_npm_test
   - stage: build
-    name: linux
-    script: make linux
-  - name: osx
-    os: osx
-    script: make darwin
-  - name: arm
-    script: make rpi
+    name: "Go"
+    script: make linux darwin rpi windows
+  - name: "Vue"
+    script: make docker_npm_build
   - stage: deploy
     script: make linux darwin rpi windows
+    name: "GitHub releases"
     deploy:
       provider: releases
       api_key: ${GITHUB_API_KEY}
@@ -42,3 +45,10 @@ jobs:
       draft: true
       on:
         tags: true
+  - name: "Docker Hub"
+    provider: script
+    script:
+    - "echo $DOCKER_PASSWORD | docker login -u amimof --password-stdin"
+    - make docker_build
+    on:
+      branch: master

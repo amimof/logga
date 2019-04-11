@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="alert alert-dark" role="alert">
-      Ooops! Page not found
+      {{ msg }}
     </div>
   </div>
 </template>
@@ -10,8 +10,13 @@
 export default {
   name: 'NotFoundComponent',
   props: {
-    msg: String
-  }
+    msg: {
+      type: String,
+      default: () => {
+        return "Ooops! Page not found"
+      }
+    }
+  },
 }
 </script>
 
