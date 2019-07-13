@@ -12,7 +12,7 @@
     "axios": "^0.18.0",
     "bootstrap-vue": "^2.0.0-rc.15",
     "jquery": "^3.4.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "node-sass": "^4.11.0",
     "popper.js": "^1.14.7",
     "sass-loader": "^7.1.0",
