@@ -1,54 +1,68 @@
 sudo: false
-dist: stretch
+dist: xenial
 language: go
+
+go:
+  - "1.13"
+
 services:
 - docker
-go:
-- "1.11"
+
 stages:
 - test
 - build
 - deploy
-before_install:
-- make dep
+
 jobs:
   include:
   - stage: test
-    name: Go
+    name: "Verify"
     script: 
-    - make fmt
+    - make checkfmt
+    - make fmt  
     - make vet 
+    - make race
     - make gocyclo
-    - make golint 
+    - make lint 
     - make ineffassign
     - make misspell
+
+  - name: "Unit Test"
+    script:
     - make test
-  - name: Vue
-    script: make docker_npm_test
-  - stage: build
-    name: "Go"
-    script: make linux darwin rpi windows
-  - name: "Vue"
-    script: make docker_npm_build
+    - make benchmark
+    - make coverage
+    - bash <(curl -s https://codecov.io/bash)
+
+  - name: "Test UI"
+    script: make npm_test
+
+  - name: "Compile"
+    stage: build
+    script: 
+    - make
+
+  - name: "Build UI"
+    script: make npm_test
+
   - stage: deploy
-    script: make linux darwin rpi windows
-    name: "GitHub releases"
+    name: "GitHub Releases"
+    script:
+    - GOOS=linux GOARCH=amd64 BUILDPATH=./bin/multikube-linux-amd64 make
+    - GOOS=linux GOARCH=arm BUILDPATH=./bin/multikube-linux-arm make
+    - GOOS=linux GOARCH=arm64 BUILDPATH=./bin/multikube-linux-arm64 make
+    - GOOS=windows GOARCH=amd64 BUILDPATH=./bin/multikube-windows-amd64.exe make
+    - GOOS=darwin GOARCH=amd64 BUILDPATH=./bin/multikube-darwin-amd64 make
     deploy:
       provider: releases
       api_key: ${GITHUB_API_KEY}
-      file: 
-      - out/logga-linux-amd64
-      - out/logga-darwin-amd64
-      - out/logga-linux-arm
-      - out/logga-windows-amd64.exe
+      file:
+      - bin/logga-linux-amd64
+      - bin/logga-linux-arm
+      - bin/logga-linux-arm64
+      - bin/logga-windows-amd64.exe
+      - bin/logga-darwin-amd64
       skip_cleanup: true
       draft: true
       on:
         tags: true
-  - name: "Docker Hub"
-    provider: script
-    script:
-    - "echo $DOCKER_PASSWORD | docker login -u amimof --password-stdin"
-    - make docker_build
-    on:
-      branch: master
