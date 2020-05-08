@@ -113,7 +113,7 @@ func main() {
 		HandlerFunc(a.GetPodLog)
 
 	// Serve the UI
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("/logga/web/")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("/web/dist/")))
 
 	s := server.NewServer()
 	s.Port = port

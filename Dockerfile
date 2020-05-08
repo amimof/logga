@@ -1,12 +1,18 @@
-FROM golang:alpine AS build-env
-RUN  apk add --no-cache --update git make ca-certificates
-LABEL maintaner="@amimof (amir.mofasser@gmail.com)"
-#COPY . /go/src/gitlab.com/amimof/logga
-#WORKDIR /go/src/gitlab.com/amimof/logga
-#RUN make linux
+FROM golang:1.13-alpine AS go-build
+COPY . /build
+WORKDIR /build/
+RUN apk add --no-cache --update git make ca-certificates \
+&&  make
+
+FROM node:10 AS npm-build
+COPY web/ /build
+WORKDIR /build/
+RUN npm install \
+&&  NODE_ENV=production npm run build
 
 FROM scratch
-COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-ADD ./out/logga-linux-amd64 /go/bin/logga
-ADD ./web/dist /logga/web
-ENTRYPOINT ["/go/bin/logga"]
+LABEL maintaner="@amimof (amir.mofasser@gmail.com)"
+COPY --from=go-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=go-build /build/bin/* /
+COPY --from=npm-build /build/dist /web/dist
+ENTRYPOINT ["/logga"]

@@ -42,7 +42,7 @@ func (a *API) GetPods(w http.ResponseWriter, r *http.Request) {
 		SetHeader("Accept", "application/json").
 		Namespace(vars["namespace"]).
 		Resource("pods").
-		Do().
+		Do(context.Background()).
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
@@ -78,7 +78,7 @@ func (a *API) GetPod(w http.ResponseWriter, r *http.Request) {
 		Namespace(vars["namespace"]).
 		Resource("pods").
 		Name(vars["pod"]).
-		Do().
+		Do(context.Background()).
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
@@ -110,7 +110,7 @@ func (a *API) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 		RESTClient().
 		Get().
 		Resource("namespaces").
-		Do().
+		Do(context.Background()).
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
@@ -144,7 +144,7 @@ func (a *API) GetNamespace(w http.ResponseWriter, r *http.Request) {
 		Get().
 		Resource("namespaces").
 		Name(vars["namespace"]).
-		Do().
+		Do(context.Background()).
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
@@ -208,7 +208,7 @@ func (a *API) GetPodLog(w http.ResponseWriter, r *http.Request) {
 		CoreV1().
 		Pods(vars["namespace"]).
 		GetLogs(vars["pod"], opts).
-		Do().
+		Do(context.Background()).
 		StatusCode(&statusCode)
 
 	if res.Error() != nil {
@@ -272,10 +272,9 @@ func (a *API) StreamPodLog(w http.ResponseWriter, r *http.Request) {
 	req := a.client.
 		CoreV1().
 		Pods(vars["namespace"]).
-		GetLogs(vars["pod"], opts).
-		Context(ctx)
+		GetLogs(vars["pod"], opts)
 
-	stream, err := req.Stream()
+	stream, err := req.Stream(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

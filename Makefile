@@ -1,103 +1,143 @@
-# Borrowed from: 
-# https://github.com/silven/go-example/blob/master/Makefile
-# https://vic.demuzere.be/articles/golang-makefile-crosscompile/
-
-BINARY=logga
-GOARCH=amd64
-VERSION=1.0.0-beta.1
+MODULE   = $(shell env GO111MODULE=on $(GO) list -m)
+DATE    ?= $(shell date +%FT%T%z)
+VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
+			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 COMMIT=$(shell git rev-parse HEAD)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 GOVERSION=$(shell go version | awk -F\go '{print $$3}' | awk '{print $$1}')
-GITHUB_USERNAME=amimof
-BUILD_DIR=${GOPATH}/src/github.com/${GITHUB_USERNAME}/${BINARY}
-PKG_LIST=$$(go list ./... | grep -v /vendor/)
-# Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS = -ldflags "-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -X main.GOVERSION=${GOVERSION}"
+PKGS     = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
+TESTPKGS = $(shell env GO111MODULE=on $(GO) list -f \
+			'{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' \
+			$(PKGS))
+BUILDPATH ?= $(BIN)/$(shell basename $(MODULE))
+SRC_FILES=find . -name "*.go" -type f -not -path "./vendor/*" -not -path "./.git/*" -not -path "./.cache/*" -print0 | xargs -0 
+BIN      = $(CURDIR)/bin
+TBIN		 = $(CURDIR)/test/bin
+GO			 = go
+TIMEOUT  = 15
+V = 0
+Q = $(if $(filter 1,$V),,@)
+M = $(shell printf "\033[34;1m➜\033[0m")
 
-# Build the project
-all: build
+export GO111MODULE=on
+export CGO_ENABLED=0
 
-dep:
-	go get -v -d ./cmd/logga/... ;
+# Build
 
-test:
-	cd ${BUILD_DIR}; \
-	go test ${PKG_LIST} ; \
-	cd - >/dev/null
+.PHONY: all
+all: | $(BIN) ; $(info $(M) building executable to $(BUILDPATH)) @ ## Build program binary
+	$Q $(GO) build \
+		-tags release \
+		-ldflags '-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -X main.GOVERSION=${GOVERSION}' \
+		-o $(BUILDPATH) cmd/logga/main.go
 
-fmt:
-	cd ${BUILD_DIR}; \
-	gofmt -s -d -e -w .; \
+# Tools
 
-vet:
-	cd ${BUILD_DIR}; \
-	go vet ${PKG_LIST}; \
+$(BIN):
+	@mkdir -p $(BIN)
+$(TBIN):
+	@mkdir -p $@
+$(TBIN)/%: | $(TBIN) ; $(info $(M) building $(PACKAGE))
+	$Q tmp=$$(mktemp -d); \
+	   env GO111MODULE=off GOPATH=$$tmp GOBIN=$(TBIN) $(GO) get $(PACKAGE) \
+		|| ret=$$?; \
+	   rm -rf $$tmp ; exit $$ret
 
-gocyclo:
-	go get -u github.com/fzipp/gocyclo; \
-	cd ${BUILD_DIR}; \
-	${GOPATH}/bin/gocyclo .; \
+GOLINT = $(TBIN)/golint
+$(BIN)/golint: PACKAGE=golang.org/x/lint/golint
 
-golint:
-	go get -u golang.org/x/lint/golint; \
-	cd ${BUILD_DIR}; \
-	${GOPATH}/bin/golint ${PKG_LIST}; \
+GOCYCLO = $(TBIN)/gocyclo
+$(TBIN)/gocyclo: PACKAGE=github.com/fzipp/gocyclo
 
-ineffassign:
-	go get github.com/gordonklaus/ineffassign; \
-	cd ${BUILD_DIR}; \
-	${GOPATH}/bin/ineffassign .; \
+INEFFASSIGN = $(TBIN)/ineffassign
+$(TBIN)/ineffassign: PACKAGE=github.com/gordonklaus/ineffassign
 
-misspell:
-	go get -u github.com/client9/misspell/cmd/misspell; \
-	cd ${BUILD_DIR}; \
-	find . -type f -not -path "./vendor/*" -not -path "./.git/*"  -not -path "./web/node_modules/*" -not -path "./web/dist/*" -print0 | xargs -0 ${GOPATH}/bin/misspell; \
+MISSPELL = $(TBIN)/misspell
+$(TBIN)/misspell: PACKAGE=github.com/client9/misspell/cmd/misspell
 
-ci: fmt vet gocyclo golint ineffassign misspell 
+GOLINT = $(TBIN)/golint
+$(TBIN)/golint: PACKAGE=golang.org/x/lint/golint
 
-linux: dep
-	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-linux-${GOARCH} cmd/logga/main.go
+GOCOV = $(TBIN)/gocov
+$(TBIN)/gocov: PACKAGE=github.com/axw/gocov/...
 
-rpi: dep
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-linux-arm cmd/logga/main.go
+# Tests
 
-darwin: dep
-	CGO_ENABLED=0 GOOS=darwin GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-darwin-${GOARCH} cmd/logga/main.go
+.PHONY: lint
+lint: | $(GOLINT) ; $(info $(M) running golint) @ ## Runs the golint command
+	$Q $(GOLINT) -set_exit_status $(PKGS)
 
-windows: dep
-	CGO_ENABLED=0 GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/out/${BINARY}-windows-${GOARCH}.exe cmd/logga/main.go
+.PHONY: gocyclo
+gocyclo: | $(GOCYCLO) ; $(info $(M) running gocyclo) @ ## Calculates cyclomatic complexities of functions in Go source code
+	$Q $(GOCYCLO) -over 25 .
 
-build: linux darwin rpi windows
+.PHONY: ineffassign
+ineffassign: | $(INEFFASSIGN) ; $(info $(M) running ineffassign) @ ## Detects ineffectual assignments in Go code
+	$Q $(INEFFASSIGN) .
 
-docker_fmt:
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make fmt
+.PHONY: misspell
+misspell: | $(MISSPELL) ; $(info $(M) running misspell) @ ## Finds commonly misspelled English words
+	$Q $(MISSPELL) .
 
-docker_test:
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make test
+.PHONY: test
+test: ; $(info $(M) running go test) @ ## Runs unit tests
+	$Q $(GO) test -v ${PKGS}
 
-docker_compile:
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga golang:${GOVERSION} make linux
+.PHONY: fmt
+fmt: ; $(info $(M) running gofmt) @ ## Formats Go code
+	$Q $(GO) fmt $(PKGS)
 
-docker_npm_test:
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:10 npm install
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:10 npm run test:unit
+.PHONY: vet
+vet: ; $(info $(M) running go vet) @ ## Examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
+	$Q $(GO) vet $(PKGS)
 
-docker_npm_build:
-	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:10 npm install
+.PHONY: race
+race: ; $(info $(M) running go race) @ ## Runs tests with data race detection
+	$Q CGO_ENABLED=1 $(GO) test -race -short $(PKGS)
+
+.PHONY: benchmark
+benchmark: ; $(info $(M) running go benchmark test) @ ## Benchmark tests to examine performance
+	$Q $(GO) test -run=__absolutelynothing__ -bench=. $(PKGS)
+
+.PHONY: coverage
+coverage: ; $(info $(M) running go coverage) @ ## Runs tests and generates code coverage report at ./test/coverage.out
+	$Q mkdir -p $(CURDIR)/test/
+	$Q $(GO) test -coverprofile="$(CURDIR)/test/coverage.out" $(PKGS)
+
+.PHONY: checkfmt
+checkfmt: ; $(info $(M) running checkfmt) @ ## Checks if code is formatted with go fmt and errors out if not
+	@test "$(shell $(SRC_FILES) gofmt -l)" = "" \
+    || { echo "Code not formatted, please run 'make fmt'"; exit 2; }
+
+.PHONY: npm_install
+npm_install:
+	npm install --prefix web/
+
+.PHONY: npm_test
+npm_test: npm_install
+	npm run test:unit --prefix web/
+
+.PHONY: npm_build
+npm_build: npm_install
 	docker run --rm -v "${PWD}":/go/src/github.com/amimof/logga -w /go/src/github.com/amimof/logga/web node:10 npm run build
 
-docker_image_build:
-	docker build -t amimof/logga:${VERSION} .
-	docker tag amimof/logga:${VERSION} amimof/logga:latest
+# Misc
 
-docker_image_push:
-	docker push amimof/logga:${VERSION}
-	docker push amimof/logga:latest
+.PHONY: help
+help:
+	@grep -hE '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m∙ %s:\033[0m %s\n", $$1, $$2}'
 
-docker_build: docker_compile docker_npm_build docker_image_build docker_image_push
+.PHONY: version
+version:	## Print version information
+	@echo App: $(VERSION)
+	@echo Go: $(GOVERSION)
+	@echo Commit: $(COMMIT)
+	@echo Branch: $(BRANCH)
 
-clean:
-	-rm -rf ${BUILD_DIR}/out/
-	-rm -rf ${BUILD_DIR}/web/dist/
-
-.PHONY: linux darwin windows test fmt clean
+.PHONY: clean
+clean: ; $(info $(M) cleaning)	@ ## Cleanup everything
+	@rm -rfv $(BIN)
+	@rm -rfv $(TBIN)
+	@rm -rfv $(CURDIR)/test
+	@rm -rfv ${CURDIR}/web/dist/
