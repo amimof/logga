@@ -14,5 +14,5 @@ FROM scratch
 LABEL maintaner="@amimof (amir.mofasser@gmail.com)"
 COPY --from=go-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=go-build /build/bin/* /
-COPY --from=npm-build /build/dist/* /logga/web/
+COPY --from=npm-build /build/dist /web/dist
 ENTRYPOINT ["/logga"]
