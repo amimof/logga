@@ -13,7 +13,7 @@
     "bootstrap-vue": "^2.0.0-rc.15",
     "jquery": "^3.5.0",
     "lodash": "^4.17.19",
-    "node-sass": "^4.11.0",
+    "node-sass": "^4.13.1",
     "popper.js": "^1.14.7",
     "sass-loader": "^7.1.0",
     "vue": "^2.6.10",
